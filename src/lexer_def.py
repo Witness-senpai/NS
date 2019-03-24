@@ -1,9 +1,6 @@
-import lexer
-
 token_exprs = [
     (r'[ \t\n]+',               None),
     (r'!![^\n]*',               None),
-    (r'!!=[^!]*=!!',            None),
 
     (r'\+\+',                   "INCREMENT"),
     (r'\+=',                    "PLUS_ASSIGN"),
@@ -46,6 +43,3 @@ token_exprs = [
     (r'"[^"]*"',                "STRING"),
     (r'[A-Za-z_][A-Za-z0-9_]*', "ID")                    
 ]
-
-def do_lex(string):
-    return lexer.lex(string, token_exprs)

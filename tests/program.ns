@@ -1,3 +1,4 @@
+
 a = 10;
 b = "bobba";
 c = a * 10;
@@ -8,11 +9,6 @@ while(c < 100){
     a *= c;
     c += 10;
 }
-
-!!=  
-multi-line
-comment test
-=!!
 
 if (a < c){
     c *= 10.2;

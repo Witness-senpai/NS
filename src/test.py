@@ -1,9 +1,9 @@
 import sys
-from lexer_def import *
+from lexer import do_lex
 
-filename = "program.ns"
+filename = "./tests/program.ns"
 file = open(filename)
-characters = file.readlines()
+characters = file.read()
 tokens = do_lex(characters)
 file.close()
 for token in tokens:
