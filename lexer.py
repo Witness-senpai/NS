@@ -15,7 +15,7 @@ def lex(characters, token_exprs):
                 match = regex.match(line, pos)
                 if match:
                     txt = match.group(0)
-                    if tag != "COMMENT" or tag != "SPACE":
+                    if tag:
                         token = (txt, tag)
                         tokens.append(token)
                     break
