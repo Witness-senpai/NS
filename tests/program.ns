@@ -1,15 +1,17 @@
 
 a = 10;
-b = "bobba";
-c = a * 10;
+!!b = "bobba";
+c = a * 89;
 
 !!one-line comment
 
 while(c < 100){
-    a *= c;
-    c += 10;
+    a = a * c;
+    c = c + 10;
 }
 
 if (a < c){
-    c *= 10.2;
+    c = c * 111;
+} else {
+    c = a
 }
