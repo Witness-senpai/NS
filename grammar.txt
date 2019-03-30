@@ -1,0 +1,30 @@
+lang -> expr*
+expr -> assign | while_stmt | if_stmt
+assign -> var assign_op arif_stmt semicolon
+arif_stmt -> value (arif_op value)*
+value -> var | number | bkt_expr
+bkt_expr -> bkt_open arif_stmt bkt_close
+
+while_stmt -> KW_WHILE bkt_open log_stmt bkt_close
+                brace_open expr* brace_close
+if_stmt -> KW_IF bkt_open log_stmt bkt_close
+                brace_open expr* brace_close [else_stmt]
+else_stmt -> KW_ELSE brace_open expr* brace_close
+
+log_stmt -> log_value (log_op log_value)*
+log_value -> var | number | log_bkt_expr
+log_bkt_expr -> bkt_open log_stmt bkt_close
+
+KW_WHILE -> "while"
+KW_IF -> "if"
+KW_ELSE -> "else"
+
+bkt_open    = "("
+bkt_close   = ")"
+brace_open  = "{"
+brace_close = "}"
+logic_op -> "or" | "and" | "not" | "<" | "<=" | ">" | ">=" | "!="
+arifm_op -> * | / | + | -
+var -> [A-Za-z_][A-Za-z_0-9]*
+number -> [0-9]*
+semicolon -> ;

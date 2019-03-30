@@ -33,13 +33,13 @@ token_exprs = [
     (r'\}',                     "BRACE_CLOSE"),
     (r';',                      "SEMICOLON"),
 
-    (r'^if',                    "IF"),
-    (r'^else',                  "ELSE"),
-    (r'^while',                 "WHILE"),
-    (r'^end',                   "END"),
+    (r'if',                    "IF"),
+    (r'else',                  "ELSE"),
+    (r'while',                 "WHILE"),
+    (r'end',                   "END"),
 
     (r'[0-9]+\.[0-9]+',         "DIGIT_FLOAT"),   
-    (r'[0-9]+',                 "DIGIT_INT"),      
-    (r'"[^"]*"',                "STRING"),
+    (r'[0-9]+',                 "NUMBER"),      
+    #(r'"[^"]*"',                "STRING"),
     (r'[A-Za-z_][A-Za-z0-9_]*', "ID")                    
 ]
