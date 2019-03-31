@@ -23,8 +23,8 @@ bkt_open    = "("
 bkt_close   = ")"
 brace_open  = "{"
 brace_close = "}"
-logic_op -> "or" | "and" | "not" | "<" | "<=" | ">" | ">=" | "!="
-arifm_op -> * | / | + | -
+log_op -> "or" | "and" | "not" | "<" | "<=" | ">" | ">=" | "!="
+arif_op -> * | / | + | -
 var -> [A-Za-z_][A-Za-z_0-9]*
-number -> [0-9]*
-semicolon -> ;
+number -> -?[0-9]*
+semicolon -> ";"

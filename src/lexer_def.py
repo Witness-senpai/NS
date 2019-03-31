@@ -16,10 +16,10 @@ token_exprs = [
     (r'\*=',                    "MULT_ASSIGN"),
     (r'\*',                     "MULT"),    
 
-    (r'^not',                   "NOT"),
-    (r'^and',                   "AND"),  
-    (r'^or',                    "OR"),
-    (r'^xor',                   "XOR"),
+    (r'not',                    "NOT"),
+    (r'and',                    "AND"),  
+    (r'or',                     "OR"),
+    (r'xor',                    "XOR"),
     (r'>=',                     "GRATER_EQ"),
     (r'>',                      "GRATER"),
     (r'<=',                     "LESS_EQ"),
@@ -33,10 +33,9 @@ token_exprs = [
     (r'\}',                     "BRACE_CLOSE"),
     (r';',                      "SEMICOLON"),
 
-    (r'if',                    "IF"),
-    (r'else',                  "ELSE"),
-    (r'while',                 "WHILE"),
-    (r'end',                   "END"),
+    (r'if',                     "IF"),
+    (r'else',                   "ELSE"),
+    (r'while',                  "WHILE"),
 
     (r'[0-9]+\.[0-9]+',         "DIGIT_FLOAT"),   
     (r'[0-9]+',                 "NUMBER"),      
