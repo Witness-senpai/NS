@@ -1,9 +1,11 @@
 from sys import exit
+import Executor as ex
 
 class Parser:
     def __init__(self, tokens):
-        self.tokens = tokens
-        self.pos = 0
+        self.tokens = tokens #набор кокенов после лексера
+        self.pos = 0 #показывает текущий номер токена(позицию) в наборе токенов
+        self.stack = ex.StackMachine() #cтек-машина, которая будет выполнять код в ПОЛИЗ
 
     def parseExeption(self, expected, detected):
         print("\nParse error: detected " + "'" + detected +
@@ -51,6 +53,7 @@ class Parser:
 
     def var(self, pos):
         if self.tokens[self.pos][1] == "ID":
+            self.stack.push(self.tokens[self.pos])
             self.pos += 1
             return True
         else:
@@ -58,6 +61,7 @@ class Parser:
 
     def assign_op(self, pos):
         if self.tokens[self.pos][1] == "ASSIGN": 
+            self.stack.push(self.tokens[self.pos])
             self.pos += 1
             return True
         else:
@@ -84,6 +88,7 @@ class Parser:
 
     def number(self, pos):
         if self.tokens[self.pos][1] == "NUMBER":
+            self.stack.push(self.tokens[self.pos])
             self.pos += 1
             return True
         else:
@@ -154,7 +159,7 @@ class Parser:
         if(not self.brace_close(self.pos)):
             self.parseExeption("}", self.tokens[self.pos][0])
             return False
-        #Выполнение else_stmt не обязательно и не повлияет на выплнение if_stmt
+        #Выполнение else_stmt не обязательно и не повлияет на выполнение if_stmt
         if (self.tokens[self.pos][1] == "ELSE"):
             if (not self.else_stmt(self.pos)):
                 return False
@@ -177,6 +182,7 @@ class Parser:
 
     def KW_IF(self, pos):
         if (self.tokens[self.pos][1] == "IF"):
+            self.stack.push(self.tokens[self.pos])
             self.pos += 1
             return True
         else:
@@ -184,6 +190,7 @@ class Parser:
 
     def KW_ELSE(self, pos):
         if (self.tokens[self.pos][1] == "ELSE"):
+            self.stack.push(self.tokens[self.pos])
             self.pos += 1
             return True
         else:
@@ -215,6 +222,7 @@ class Parser:
 
     def KW_WHILE(self, pos):
         if (self.tokens[self.pos][1] == "WHILE"):
+            self.stack.push(self.tokens[self.pos])
             self.pos += 1
             return True
         else:
@@ -222,6 +230,7 @@ class Parser:
 
     def brace_open(self, pos):
         if (self.tokens[self.pos][1] == "BRACE_OPEN"):
+            self.stack.push(self.tokens[self.pos])
             self.pos += 1
             return True
         else:
@@ -229,6 +238,7 @@ class Parser:
 
     def brace_close(self, pos):
         if (self.tokens[self.pos][1] == "BRACE_CLOSE"):
+            self.stack.push(self.tokens[self.pos])
             self.pos += 1
             return True
         else:
@@ -236,6 +246,7 @@ class Parser:
 
     def bkt_open(self, pos):
         if (self.tokens[self.pos][1] == "BRACKET_OPEN"):
+            self.stack.push(self.tokens[self.pos])
             self.pos += 1
             return True
         else:
@@ -243,6 +254,7 @@ class Parser:
 
     def bkt_close(self, pos):
         if (self.tokens[self.pos][1] == "BRACKET_CLOSE"):
+            self.stack.push(self.tokens[self.pos])
             self.pos += 1
             return True
         else:
@@ -255,6 +267,7 @@ class Parser:
             self.tokens[self.pos][1] == "MINUS"       or
             self.tokens[self.pos][1] == "DIVISION"
         ):
+            self.stack.push(self.tokens[self.pos])
             self.pos += 1
             return True
         else:
@@ -273,6 +286,7 @@ class Parser:
             self.tokens[self.pos][1] == "EQUAL"      or
             self.tokens[self.pos][1] == "NOT_EQUAL"
         ):
+            self.stack.push(self.tokens[self.pos])
             self.pos += 1
             return True
         else:
