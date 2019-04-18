@@ -294,6 +294,7 @@ class Parser:
 
     def semicolon(self, pos):
         if (self.tokens[pos][1] == "SEMICOLON"):
+            self.stack.push(self.tokens[self.pos])
             self.pos += 1
             return True        
         else:
