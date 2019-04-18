@@ -8,13 +8,13 @@ def lex(characters, token_exprs):
     while pos < len(characters):
         match = None
         for token_expr in token_exprs:
-            pattern, tag = token_expr
+            pattern, tag, priority = token_expr
             regex = re.compile(pattern)
             match = regex.match(characters, pos)
             if match:
                 lexem = match.group(0)
                 if tag:
-                    token = (lexem, tag)
+                    token = (lexem, tag, priority)
                     tokens.append(token)
                 break
         if not match:
