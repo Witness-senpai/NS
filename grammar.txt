@@ -11,25 +11,27 @@ if_stmt -> KW_IF bkt_open log_stmt bkt_close
                 brace_open expr* brace_close [else_stmt]
 else_stmt -> KW_ELSE brace_open expr* brace_close
 
-log_stmt -> log_value (log_op log_value)*
-log_value -> var | number | log_bkt_expr
+log_stmt -> log_value (log_op log_value)+
+log_value -> [log_not] ( var | number | log_bkt_expr )
 log_bkt_expr -> bkt_open log_stmt bkt_close
 
-KW_WHILE -> "while"
-KW_IF -> "if"
-KW_ELSE -> "else"
-KW_END -> "end."
+KW_WHILE -> while
+KW_IF -> if
+KW_ELSE -> else
+KW_END -> end.
 
-bkt_open    -> "("
-bkt_close   -> ")"
-brace_open  -> "{"
-brace_close -> "}"
+bkt_open    -> (
+bkt_close   -> )
+brace_open  -> {
+brace_close -> }
 inc_dec -> ++ | --
 assign_op -> = | -= | += | *= | /= | //=
-log_op -> "or" | "and" | "not" | "<" | "<=" | ">" | ">=" | "!="
+log_op  -> or | and | xor | < | <= | > | >= | != | ==
+log_not -> not
 arif_op -> * | ** | + | - | / | //
 var -> [A-Za-z_][A-Za-z_0-9]*
-number -> int | float
+number -> int | float | bool
 int -> -?[0-9]+
 float -> -?[0-9]+.[0-9]+
+bool -> True | False
 semicolon -> ";"

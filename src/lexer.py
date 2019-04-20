@@ -8,6 +8,7 @@ def lex(characters, token_exprs):
     while pos < len(characters):
         match = None
         for token_expr in token_exprs:
+            #извлекаем данные из кортежа лексемы
             pattern, tag, priority = token_expr
             regex = re.compile(pattern)
             match = regex.match(characters, pos)

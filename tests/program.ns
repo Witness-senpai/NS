@@ -1,14 +1,4 @@
 c = 50;
-c++;
-a = 10 + c;
-c /= (a ** 10 / (99 * c ** 10)) - 9;
-b = 9;
-TEST = b;
-TEST *= b + c - a;
-c -= (a * (b * c + 1));
-c = a * 89 - b * 67;
-
-!!one-line comment
 
 while(c < 100){
     a = a * c;
@@ -21,6 +11,19 @@ while(c < 100){
         b = c + a * 5;
     }
 }
+
+c++;
+a = 10 + c;
+c /= (a ** 10 / (99 * c ** 10)) - 9;
+b = 9;
+TEST = b;
+TEST *= b + c - a;
+c -= (a * (b * c + 1));
+c = a * 89 - b * 67;
+
+!!one-line comment
+
+
 b = 1232354;
 
 end.

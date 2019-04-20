@@ -1,4 +1,4 @@
-#token -> (reEx, tag, priority)
+#token -> (regEx, tag, priority)
 token_exprs = [
     (r'[ \t\n]+',               None,                0),
     (r'!![^\n]*',               None,                0),
@@ -36,9 +36,11 @@ token_exprs = [
     (r';',                      "SEMICOLON",         0),
 
     (r'end.',                   "END",               0),
-    (r'if',                     "IF",                0),
-    (r'else',                   "ELSE",              0),
-    (r'while',                  "WHILE",             0),
+    (r'if',                     "IF",                1),
+    (r'else',                   "ELSE",              1),
+    (r'while',                  "WHILE",             1),
+    (r'True',                   "TRUE",              0),
+    (r'False',                  "FALSE",             0),
 
     (r'[0-9]+\.[0-9]+',         "FLOAT",             0),   
     (r'[0-9]+',                 "INT",               0),      

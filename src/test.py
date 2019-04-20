@@ -10,4 +10,6 @@ file.close()
 for token in tokens:
     print(token)
 
-print(p.do_parse(tokens))
+file = open("poliz.txt", "w")
+file.write(p.do_parse(tokens))
+file.close()
