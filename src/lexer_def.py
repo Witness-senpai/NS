@@ -40,8 +40,8 @@ token_exprs = [
     (r'else',                   "ELSE",              0),
     (r'while',                  "WHILE",             0),
 
-    (r'[0-9]+\.[0-9]+',         "DIGIT_FLOAT",       0),   
-    (r'[0-9]+',                 "NUMBER",            0),      
+    (r'[0-9]+\.[0-9]+',         "FLOAT",             0),   
+    (r'[0-9]+',                 "INT",               0),      
     #(r'"[^"]*"',                "STRING"),
     (r'[A-Za-z_][A-Za-z0-9_]*', "ID",                0)                    
 ]

@@ -4,7 +4,7 @@ class StackMachine:
     def __init__(self):
         self.stack  = [] #основной стек для выполнения операций в ПОЛИЗ
         self.buffer = [] #промежуточный стек для упорядочивания приоритетов
-        self.variables = {} #cловарь varID -> value
+        self.variables = {} #cловарь varID -> getValue
 
     #Если входной токен число, переменная или ключ.слова ветвлений\циклов,
     #то добавляем его в общий стек. Иначе, добавляем токен в промежуточный стек(buffer)
@@ -13,7 +13,7 @@ class StackMachine:
         print(str(self.stack) + "\n")
         print(str(self.buffer) + "\n")
         print(str(self.variables) + "\n=====\n")
-        if (el[1] in ["NUMBER", "FLOAT_NUMBER", "ID", "IF", "ELSE", "WHILE"]):
+        if (el[1] in ["INT", "FLOAT", "ID", "IF", "ELSE", "WHILE"]):
             self.stack.append(el)
         else:  
             if (el[0] == ")"): #выталкиваем всё в основной буфер до первой (
@@ -44,7 +44,7 @@ class StackMachine:
 
             try:
                 if (not self.endEl(self.stack)[1] in 
-                ["NUMBER", "FLOAT_NUMBER", "ID", "IF", "ELSE", "WHILE"]):
+                ["INT", "FLOAT", "ID", "IF", "ELSE", "WHILE"]):
                     self.calculate()
             except:
                 pass
@@ -61,6 +61,9 @@ class StackMachine:
                 print("Error: variable '" + var[0] + "' is not defined")
                 exit()
 
+    def getValue(self, var):
+        return int(var[0]) if var[1] == "INT" else float(var[0])
+
     def calculate(self):
         op = self.stack.pop()[0]
 
@@ -70,14 +73,14 @@ class StackMachine:
             a = self.stack.pop()
         else:
             a = self.stack.pop()
-            b = (0, "NUMBER") #костыль
+            b = (0, "INT") #костыль
 
         #сначала проверяем, если это оператор присвоения,
         #то переменная будет перезаписана или проинициализирована
         if (op == "="):
             a = a[0]
-            #либо берём значени переменной, иначе это сразу число
-            b = int(b[0]) if b[1] == "NUMBER" else b[0]
+            #Это либо значение переменной либо непосредственно число
+            b = b[0] if b[1] == "ID" else self.getValue(b)
             self.assign(a, b)
         #В противном случае, в других операциях будут использоваться уже сущ. переменные или числа
         else:
@@ -85,8 +88,8 @@ class StackMachine:
             self.checkDef(a)
             self.checkDef(b)
 
-            #для операторов которые меняют значение переменной, узнаём имя переменной для обращения и второе число
-            b = self.variables.get(b[0]) if self.variables.get(b[0]) != None else ( int(b[0]) if b[1] == "NUMBER" else b[0])
+            #для операторов которые меняют значение переменной, нужно имя переменной для обращения и второе число
+            b = self.variables.get(b[0]) if self.variables.get(b[0]) != None else self.getValue(b)
             if (op == "++"):
                 self.inc(a[0])
             elif (op == "--"):
@@ -102,7 +105,7 @@ class StackMachine:
             elif (op == "//="):
                 self.modAssign(a[0],   b)
             
-            a = self.variables.get(a[0]) if self.variables.get(a[0]) != None else ( int(a[0]) if a[1] == "NUMBER" else a[0])
+            a = self.variables.get(a[0]) if self.variables.get(a[0]) != None else self.getValue(a)
 
             if (op == "+"):
                 self.stack.append(self.plus(a, b))
@@ -113,7 +116,7 @@ class StackMachine:
             elif (op == "**"):
                 self.stack.append(self.pow(a,b))
             elif (op == "/"):
-                self.stack.append(self.division(a,b))
+                self.stack.append(self.div(a,b))
             elif (op == "//"):
                 self.stack.append(self.mod(a,b))
 
@@ -127,28 +130,43 @@ class StackMachine:
         self.variables[num1] = self.variables[num2] if self.variables.get(num2) != None else num2
 
     def plus(self, num1, num2):
-        return num1 + num2, "NUMBER"
+        if (type(num1) == float or type(num2) == float):
+            return num1 + num2, "FLOAT"
+        else:
+            return num1 + num2, "INT" 
 
     def minus(self, num1, num2):
-        return num1 - num2, "NUMBER" 
+        if (type(num1) == float or type(num2) == float):
+            return (num1 - num2, "FLOAT")
+        else:
+            return (num1 - num2, "INT") 
 
     def mult(self, num1, num2):
-        return num1 * num2, "NUMBER" 
+        if (type(num1) == float or type(num2) == float):
+            return num1 * num2, "FLOAT"
+        else:
+            return num1 * num2, "INT" 
 
     def pow(self, num1, num2):
-        return num1 ** num2, "NUMBER" 
+        if (type(num1) == float or type(num2) == float):
+            return num1 ** num2, "FLOAT"
+        else:
+            return num1 ** num2, "INT"  
 
-    def division(self, num1, num2):
+    def div(self, num1, num2):
         if num2 == 0:
             print("Error: division by zero")
             exit() 
-        return num1 / num2, "NUMBER"
+        return float(num1) / float(num2), "FLOAT"
     
     def mod(self, num1, num2):
-        if num2 == 0:
+        if (type(num1) != float and type(num2) != float):
+            print("Error: modulus from float")
+            exit()
+        elif num2 == 0:
             print("Error: modulus by zero")
-            exit() 
-        return num1 % num2, "NUMBER"
+            exit()
+        return num1 % num2, "INT"
 
     def minusAssign(self, var, num):
         self.variables[var] = self.variables.get(var) - num
@@ -161,17 +179,20 @@ class StackMachine:
 
     def divAssign(self, var, num):
         if num != 0:
-            self.variables[var] = self.variables.get(var) / num
+            self.variables[var] = self.variables.get(var) / float(num)
         else:
             print("Error: division by zero")
             exit() 
 
     def modAssign(self, var, num):
-        if num != 0:
-            self.variables[var] = self.variables.get(var) % num
-        else:
+        if (type(self.variables.get(var)) != float and type(num) != float):
+            print("Error: modulus from float")
+            exit()
+        elif num == 0:
             print("Error: modulus by zero")
-            exit() 
+            exit()
+        else:
+            self.variables[var] = self.variables.get(var) % num 
 
 
 

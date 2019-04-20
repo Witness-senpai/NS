@@ -94,10 +94,14 @@ class Parser:
             self.bkt_expr(self.pos)
             ):
             return False
-        return True    
-
+        return True 
+       
+    #number -> int | float
     def number(self, pos):
-        if self.tokens[self.pos][1] == "NUMBER":
+        if (
+            self.tokens[self.pos][1] == "INT"   or
+            self.tokens[self.pos][1] == "FLOAT"
+        ):
             self.stack.push(self.tokens[self.pos])
             self.pos += 1
             return True
