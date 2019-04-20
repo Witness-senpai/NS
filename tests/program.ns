@@ -1,8 +1,11 @@
 c = 50;
+c++;
 a = 10;
-b = a * 10;
-c = c - (a * (b / c + 1));
-!!b = "bobba";
+c += (a ** 10 // 99 * c) - 9999;
+b = 9;
+TEST = b;
+TEST *= b + c - a;
+c -= (a * (b * c + 1));
 c = a * 89 - b * 67;
 
 !!one-line comment
@@ -19,3 +22,5 @@ while(c < 100){
     }
 }
 b = 1232354;
+
+end.

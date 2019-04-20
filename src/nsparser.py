@@ -18,12 +18,14 @@ class Parser:
     def parse(self):
         return self.lang()
 
-    #lang -> expr*
+    #lang -> expr* KW_END
     def lang(self):
         while(not self.endScript()):
             if (not self.expr(self.pos)):
-                print(self.tokens[self.pos][0] + " : " + self.tokens[self.pos][1])
-                return False 
+                if (not self.tokens[self.pos][1] == "END"):
+                    return False 
+                self.pos += 1
+        print("============\n" + str(self.stack.variables))
         return True    
 
     #expr -> assign | while_stmt | if_stmt
@@ -36,17 +38,18 @@ class Parser:
             return False
         return True  
 
-    #assign -> var assign_op arif_stmt semicolon
+    #assign -> var ((assign_op arif_stmt) | inc_dec) semicolon
     def assign(self, pos):
         if (not self.var(self.pos)):
             return False
-        elif (not self.assign_op(self.pos)):
-            self.parseExeption("=", self.tokens[self.pos][0])
-            return False
-        elif (not self.arif_stmt(self.pos)):
-            self.parseExeption("arithmetic expression", self.tokens[self.pos][0])
-            return False
-        elif (not self.semicolon(self.pos)):
+        if (self.assign_op(self.pos)):
+            if (not self.arif_stmt(self.pos)):
+                self.parseExeption("arithmetic expression", self.tokens[self.pos][0])
+                return False
+        elif (not self.inc_dec(self.pos)):
+            self.parseExeption("=, ++ or --", self.tokens[self.pos][0])
+            return False       
+        if (not self.semicolon(self.pos)):
             self.parseExeption(";", self.tokens[self.pos][0])
             return False
         return True
@@ -60,7 +63,14 @@ class Parser:
             return False  
 
     def assign_op(self, pos):
-        if self.tokens[self.pos][1] == "ASSIGN": 
+        if (
+            self.tokens[self.pos][1] == "ASSIGN" or
+            self.tokens[self.pos][1] == "PLUS_ASSIGN" or
+            self.tokens[self.pos][1] == "MINUS_ASSIGN" or
+            self.tokens[self.pos][1] == "MULT_ASSIGN" or
+            self.tokens[self.pos][1] == "DIVISION_ASSIGN" or
+            self.tokens[self.pos][1] == "MOD_ASSIGN"
+            ): 
             self.stack.push(self.tokens[self.pos])
             self.pos += 1
             return True
@@ -260,12 +270,25 @@ class Parser:
         else:
             return False         
     
+    #Не обязателен, поэтому всегда возвращает True, чтобы не прерывать программу, главное
+    #что он запишется в список токенов если есть
+    def inc_dec(self, pos):
+        if (
+            self.tokens[self.pos][1] == "INC" or
+            self.tokens[self.pos][1] == "DEC" 
+        ):
+            self.stack.push(self.tokens[self.pos])
+            self.pos += 1
+        return True
+
     def arif_op(self, pos):
         if (
             self.tokens[self.pos][1] == "MULT"        or
             self.tokens[self.pos][1] == "PLUS"        or
             self.tokens[self.pos][1] == "MINUS"       or
-            self.tokens[self.pos][1] == "DIVISION"
+            self.tokens[self.pos][1] == "DIVISION"    or
+            self.tokens[self.pos][1] == "MOD"         or
+            self.tokens[self.pos][1] == "POW"
         ):
             self.stack.push(self.tokens[self.pos])
             self.pos += 1

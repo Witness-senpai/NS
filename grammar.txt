@@ -1,6 +1,6 @@
-lang -> expr*
+lang -> expr* KW_END
 expr -> assign | while_stmt | if_stmt
-assign -> var assign_op arif_stmt semicolon
+assign -> var ((assign_op arif_stmt) | inc_dec) semicolon
 arif_stmt -> value (arif_op value)*
 value -> var | number | bkt_expr
 bkt_expr -> bkt_open arif_stmt bkt_close
@@ -18,13 +18,16 @@ log_bkt_expr -> bkt_open log_stmt bkt_close
 KW_WHILE -> "while"
 KW_IF -> "if"
 KW_ELSE -> "else"
+KW_END -> "end."
 
-bkt_open    = "("
-bkt_close   = ")"
-brace_open  = "{"
-brace_close = "}"
+bkt_open    -> "("
+bkt_close   -> ")"
+brace_open  -> "{"
+brace_close -> "}"
+inc_dec -> ++ | --
+assign_op -> = | -= | += | *= | /= | //=
 log_op -> "or" | "and" | "not" | "<" | "<=" | ">" | ">=" | "!="
-arif_op -> * | / | + | -
+arif_op -> * | ** | + | - | / | //
 var -> [A-Za-z_][A-Za-z_0-9]*
 number -> -?[0-9]*
 semicolon -> ";"
