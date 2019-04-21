@@ -389,7 +389,7 @@ class Parser:
                 else:
                     #выполнится только если было IF без ELSE и для нормального ветвления,
                     #нужная заглушка. Если ELSE был, то на этот адрес будет записан адрес безусловного перехода
-                    self.poliz.append(None)           
+                    self.poliz.append( (None, None) )           
             elif (el[0] != "(" and el[0] != "{" and len(self.buffer) != 0):
                 #Если новый токен имеет меньший приоритет, чем последний в буффере, то
                 #последний из буффера добавялется в основной стек, а новый заносится в буффер  
@@ -415,4 +415,4 @@ class Parser:
 def do_parse(tokens):
     p = Parser(tokens)
     if (p.parse()):
-        return str(p.poliz)       
+        return p.poliz     

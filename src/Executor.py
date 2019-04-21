@@ -7,21 +7,30 @@ class StackMachine:
         self.variables = {} #cловарь c переменными: varID -> varValue
         self.pos = 0 #номер текущего элемента полиза
 
-    def endEl(self, n):
-        if (len(n) >= 1):
-            return n[len(n) - 1]
+    def stackEnd(self):
+        if (len(self.stack) >= 1):
+            return self.stack[len(self.stack) - 1]
         else:
-            return None
+            return (None, None)
 
+    #выполняет вычисление на стек машине, пока не дошли до конца ПОЛИЗа
     def process(self):
-        #пока не конец полиза
         while (self.pos < len(self.poliz)):
-            if (self.endEl(self.stack) != None):
-                if (not self.endEl(self.stack)[1] in 
-                ["INT", "FLOAT", "FALSE", "TRUE", "ID", "IF", "ELSE", "WHILE"]):
-                    self.calculate()
             self.stack.append(self.poliz[self.pos])
-            self.pos+=1
+            self.pos += 1
+            
+            if (self.stackEnd()[1] == "!"):
+                self.pos = self.stack.pop()[0]
+            elif(self.stackEnd()[1] == "!F"):
+                adr = self.stack.pop()[0]
+                if (not self.stackEnd()[0]):
+                    self.pos = adr
+                self.stack.pop() #выталкиваем оставшийся ненужный bool-результат
+            elif (self.stackEnd() != None):
+                if (not self.stackEnd()[1] in 
+                ["INT", "FLOAT", "BOOL", "ID", "IF", "ELSE", "WHILE"]):
+                    self.calculate()
+            
 
     def checkDef(self, var):
         if (type(var) is tuple):
@@ -249,6 +258,9 @@ class StackMachine:
             print("Error: using LOGICAL XOR for non-logical expression")
             exit()
 
+def do_calculate(self, poliz):
+    machine = StackMachine(poliz)
+    machine.process()
 
 
 
