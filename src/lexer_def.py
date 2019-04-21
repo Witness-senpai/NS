@@ -39,8 +39,8 @@ token_exprs = [
     (r'if',                     "IF",                1),
     (r'else',                   "ELSE",              1),
     (r'while',                  "WHILE",             1),
-    (r'True',                   "TRUE",              0),
-    (r'False',                  "FALSE",             0),
+    (r'True',                   "BOOL",              0),
+    (r'False',                  "BOOL",              0),
 
     (r'[0-9]+\.[0-9]+',         "FLOAT",             0),   
     (r'[0-9]+',                 "INT",               0),      

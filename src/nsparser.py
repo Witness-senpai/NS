@@ -5,9 +5,11 @@ class Parser:
     def __init__(self, tokens):
         self.tokens = tokens #набор токенов после лексера
         self.pos = 0 #показывает текущий номер токена(позицию) в наборе токенов
-        self.reverseNotation = [] #итоговая польская инверсная запись
+        self.poliz = [] #итоговая польская инверсная запись
         self.buffer = [] #буферный стек для операций
-        self.calls  = [] #стек с адресами переходов ветвлений 
+        self.addrsForFilling  = [] #хранит адреса ПОЛИЗa, куда потом нужно будет записать адрес перехода
+        self.addrsJumps  = [] #хранит адреса перехода(только для while)
+        self.calls = [] #стек вызовов операций while, if, else
 
     def parseExeption(self, expected, detected):
         print("\nParse error: detected " + "'" + detected +
@@ -25,7 +27,7 @@ class Parser:
         while(not self.endScript()):
             if (not self.expr(self.pos)):
                 if (not self.tokens[self.pos][1] == "END"):
-                    return False 
+                    return False
                 self.pos += 1
         return True    
 
@@ -102,8 +104,7 @@ class Parser:
         if (
             self.tokens[self.pos][1] == "INT"   or
             self.tokens[self.pos][1] == "FLOAT" or
-            self.tokens[self.pos][1] == "TRUE"  or
-            self.tokens[self.pos][1] == "FALSE"
+            self.tokens[self.pos][1] == "BOOL"
         ):
             self.pushInStack(self.tokens[self.pos])
             self.pos += 1
@@ -345,26 +346,50 @@ class Parser:
     #то добавляем его в общий стек. Иначе, добавляем токен в промежуточный стек(buffer)
     #buffer хранит операции, чтобы в правильном порядке формировать ПОЛИЗ в основном стеке
     def pushInStack(self, el):
-        print(self.reverseNotation)
+        print(self.poliz)
         print(str(self.buffer) + "\n====")
         #el -> token(velue, lexem, priority)ъ
-        if (el[1] in ["WHILE"]):
-            self.calls.append( len(self.reverseNotation) )
-        elif (el[1] in 
-        ["INT", "FLOAT", "FALSE", "TRUE", "ID"]):
-            if (el[1] in ["IF", "ELSE", "WHILE"]):
-                self.reverseNotation.append( 
-                    (len(self.reverseNotation), "") )
-            self.reverseNotation.append( (el[0], el[1]) )
-        else:  
-            if (el[0] == ")"): #выталкиваем всё в основной буфер до первой (
-                while (self.endEl(self.buffer)[0] != "("):
-                    self.reverseNotation.append(self.buffer.pop())
+        #if (el[1] in ["WHILE"]):
+        #    self.returnAdr.append( len(self.poliz) )
+        #    self.poliz.append( (el[0], el[1]) )
+        if (el[1] in 
+        ["INT", "FLOAT", "BOOL", "ID"]):
+            self.poliz.append( (el[0], el[1]) )
+        elif (el[1] in ["WHILE", "IF", "ELSE"]):
+            self.calls.append(el[1])
+            self.buffer.append(el)
+            if (el[1] in  ["ELSE"]):
                 self.buffer.pop()
-            elif (el[0] == "}"): #выталкиваем всё в основной буфер до первой }
+                self.addrsForFilling.append( len(self.poliz) )
+                self.poliz.append ( 0 ) #Добавляем любой элемент, потом он заменится на переход
+            elif (el[1] == "WHILE"):
+                self.addrsJumps.append( len(self.poliz) )
+        else:  
+            if (el[0] == ")"):#выталкиваем всё в основной буфер до первой (
+                while (self.endEl(self.buffer)[0] != "("):
+                    self.poliz.append(self.buffer.pop())
+                self.buffer.pop()#убрали саму "("
+                #если в буффере были оператторы ветвления, что фиксируем адрес для заполнения далее
+                if (self.endEl(self.buffer)[1] in ["IF", "WHILE"]):
+                        self.buffer.pop()
+                        self.addrsForFilling.append( len(self.poliz) )
+                        self.poliz.append ( 0 ) #Добавляем любой элемент, потом он заменится на переход
+            elif (el[0] == "}"): #выталкиваем всё в основной буфер до первой {
                 while (self.endEl(self.buffer)[0] != "{"):
-                    self.reverseNotation.append(self.buffer.pop())
-                self.buffer.pop()  
+                    self.poliz.append(self.buffer.pop())
+                self.buffer.pop()#убрали саму "{"
+                lastCall = self.calls.pop()
+                if (lastCall == "WHILE"):
+                    self.poliz.append( (self.addrsJumps.pop(), "!") )
+                    self.poliz[self.addrsForFilling.pop()] = (len(self.poliz), "!F")
+                elif (lastCall == "IF"):
+                    self.poliz[self.addrsForFilling.pop()] = (len(self.poliz) + 1, "!F") 
+                elif (lastCall == "ELSE"):
+                    self.poliz[self.addrsForFilling.pop()] = (len(self.poliz), "!")
+                else:
+                    #выполнится только если было IF без ELSE и для нормального ветвления,
+                    #нужная заглушка. Если ELSE был, то на этот адрес будет записан адрес безусловного перехода
+                    self.poliz.append(None)           
             elif (el[0] != "(" and el[0] != "{" and len(self.buffer) != 0):
                 #Если новый токен имеет меньший приоритет, чем последний в буффере, то
                 #последний из буффера добавялется в основной стек, а новый заносится в буффер  
@@ -374,9 +399,9 @@ class Parser:
                         while (not self.endEl(self.buffer)[0] in
                         ["=", "-=", "+=", "*=", "/=", "//=", "++", "--"]):
                             val = self.buffer.pop()
-                            self.reverseNotation.append( (val[0], val[1]) )
+                            self.poliz.append( (val[0], val[1]) )
                     val = self.buffer.pop() 
-                    self.reverseNotation.append( (val[0], val[1]) )
+                    self.poliz.append( (val[0], val[1]) )
 
             if (not el[0] in [";", ")", "}"]):
                 self.buffer.append(el)   
@@ -385,9 +410,9 @@ class Parser:
         try:
             return n[len(n) - 1]
         except:
-            return 0
+            return (None, None)
 
 def do_parse(tokens):
     p = Parser(tokens)
     if (p.parse()):
-        return str(p.reverseNotation)       
+        return str(p.poliz)       

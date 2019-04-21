@@ -1,29 +1,23 @@
 c = 50;
+a = 5;
+
+if (c >= 5){
+    a = 1;
+} else {
+    while (c > a){
+        c+=a;
+    }
+}
 
 while(c < 100){
-    a = a * c;
+    !!a = a * c;
     c = c + 10;
 
     if (a < c){
         c = c * 111;
     } else {
-        a = 1;
         b = c + a * 5;
     }
 }
-
-c++;
-a = 10 + c;
-c /= (a ** 10 / (99 * c ** 10)) - 9;
-b = 9;
-TEST = b;
-TEST *= b + c - a;
-c -= (a * (b * c + 1));
-c = a * 89 - b * 67;
-
-!!one-line comment
-
-
-b = 1232354;
 
 end.
