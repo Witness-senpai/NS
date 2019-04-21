@@ -1,4 +1,3 @@
-
 #Стек-машина, которая выполняет сам код
 class StackMachine:
     def __init__(self, poliz):
@@ -18,7 +17,7 @@ class StackMachine:
         while (self.pos < len(self.poliz)):
             self.stack.append(self.poliz[self.pos])
             self.pos += 1
-            
+
             if (self.stackEnd()[1] == "!"):
                 self.pos = self.stack.pop()[0]
             elif(self.stackEnd()[1] == "!F"):
@@ -26,11 +25,20 @@ class StackMachine:
                 if (not self.stackEnd()[0]):
                     self.pos = adr
                 self.stack.pop() #выталкиваем оставшийся ненужный bool-результат
+            elif (self.stackEnd()[1] == "PRINT"):
+                self.stack.pop() #убираем из стека print
+                self.printing(self.stack.pop()[0])
             elif (self.stackEnd() != None):
+                #если на вершине стека какая-то операция над операндами, то выполняем
                 if (not self.stackEnd()[1] in 
-                ["INT", "FLOAT", "BOOL", "ID", "IF", "ELSE", "WHILE"]):
+                ["INT", "FLOAT", "BOOL", "ID"]):
                     self.calculate()
             
+    def printing(self, value):
+        if (self.variables.get(value) != None):
+            print(">>> " + str(self.variables.get(value)))
+        else:
+            print(">>> " + str(value))
 
     def checkDef(self, var):
         if (type(var) is tuple):
@@ -258,7 +266,7 @@ class StackMachine:
             print("Error: using LOGICAL XOR for non-logical expression")
             exit()
 
-def do_calculate(self, poliz):
+def do_calculate(poliz):
     machine = StackMachine(poliz)
     machine.process()
 

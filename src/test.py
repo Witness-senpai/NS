@@ -1,21 +1,22 @@
 import sys
 from lexer import do_lex
-import nsparser as p
-import Executor as ex
+from nsparser import do_parse
+from Executor import do_calculate
 
-filename = "./tests/program.ns"
-file = open(filename)
-characters = file.read()
+fileProgram = open("./tests/program.ns")
+characters = fileProgram.read()
+fileProgram.close()
+
 tokens = do_lex(characters)
-file.close()
-for token in tokens:
-    print(token)
+poliz = do_parse(tokens)
+do_calculate(poliz)
 
-poliz = p.do_parse(tokens)
+file1 = open("./logs/tokens.txt", "w")
+file1.write(str(tokens))
+file1.close()
 
-ex = ex.StackMachine(poliz)
-ex.process()
+file1 = open("./logs/poliz.txt", "w")
+file1.write(str(poliz))
+file1.close()
 
-file = open("poliz.txt", "w")
-file.write(str(poliz))
-file.close()
+

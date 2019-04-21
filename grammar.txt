@@ -1,9 +1,10 @@
 lang -> expr* KW_END
-expr -> assign | while_stmt | if_stmt
+expr -> assign | while_stmt | if_stmt | printing
 assign -> var ((assign_op arif_stmt) | inc_dec) semicolon
 arif_stmt -> value (arif_op value)*
 value -> var | number | bkt_expr
 bkt_expr -> bkt_open arif_stmt bkt_close
+printing -> KW_PRINT bkt_open arif_stmt bkt_close semicolon
 
 while_stmt -> KW_WHILE bkt_open log_stmt bkt_close
                 brace_open expr* brace_close
@@ -18,6 +19,7 @@ log_bkt_expr -> bkt_open log_stmt bkt_close
 KW_WHILE -> while
 KW_IF -> if
 KW_ELSE -> else
+KW_PRINT -> print
 KW_END -> end.
 
 bkt_open    -> (

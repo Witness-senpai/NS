@@ -1,5 +1,4 @@
 from sys import exit
-import Executor as ex
 
 class Parser:
     def __init__(self, tokens):
@@ -14,7 +13,7 @@ class Parser:
     def parseExeption(self, expected, detected):
         print("\nParse error: detected " + "'" + detected +
              "', but " + "'" + expected + "' are expected!")
-        exit()     
+        exit(1)     
 
     def endScript(self):
         return self.pos == len(self.tokens)
@@ -36,7 +35,8 @@ class Parser:
         if not(
             self.assign(self.pos) or
             self.while_stmt(self.pos) or
-            self.if_stmt(self.pos)
+            self.if_stmt(self.pos) or
+            self.printing(self.pos)
             ):
             return False
         return True  
@@ -217,7 +217,34 @@ class Parser:
             self.pos += 1
             return True
         else:
-            return False    
+            return False  
+
+    #printing -> KW_PRINT bkt_open arif_stmt bkt_close semicolon
+    def printing(self, pos):
+        if (not self.KW_PRINT(self.pos)):
+            return False
+        elif (not self.bkt_open(self.pos)):
+            self.parseExeption("(", self.tokens[self.pos][0])
+            return False
+        elif (not self.arif_stmt(self.pos)):
+            self.parseExeption("arithmetic expression", self.tokens[self.pos][0])
+            return False
+        elif (not self.bkt_close(self.pos)):
+            self.parseExeption(")", self.tokens[self.pos][0])
+            return False
+        elif (not self.semicolon(self.pos)):
+            self.parseExeption(";", self.tokens[self.pos][0])
+            return False
+        else:
+            return True
+    
+    def KW_PRINT(self, pos):
+        if (self.tokens[self.pos][1] == "PRINT"):
+            self.pushInStack(self.tokens[self.pos])
+            self.pos += 1
+            return True
+        else:
+            return False
 
     #while_stmt -> KW_WHILE bkt_open log_stmt bkt_close brace_open expr* brace_close        
     def while_stmt(self, pos):
@@ -346,12 +373,8 @@ class Parser:
     #то добавляем его в общий стек. Иначе, добавляем токен в промежуточный стек(buffer)
     #buffer хранит операции, чтобы в правильном порядке формировать ПОЛИЗ в основном стеке
     def pushInStack(self, el):
-        print(self.poliz)
-        print(str(self.buffer) + "\n====")
-        #el -> token(velue, lexem, priority)ъ
-        #if (el[1] in ["WHILE"]):
-        #    self.returnAdr.append( len(self.poliz) )
-        #    self.poliz.append( (el[0], el[1]) )
+        #print(self.poliz)
+        #print(str(self.buffer) + "\n====")
         if (el[1] in 
         ["INT", "FLOAT", "BOOL", "ID"]):
             self.poliz.append( (el[0], el[1]) )
@@ -367,7 +390,8 @@ class Parser:
         else:  
             if (el[0] == ")"):#выталкиваем всё в основной буфер до первой (
                 while (self.endEl(self.buffer)[0] != "("):
-                    self.poliz.append(self.buffer.pop())
+                    value = self.buffer.pop()
+                    self.poliz.append( (value[0], value[1]))
                 self.buffer.pop()#убрали саму "("
                 #если в буффере были оператторы ветвления, что фиксируем адрес для заполнения далее
                 if (self.endEl(self.buffer)[1] in ["IF", "WHILE"]):
@@ -376,7 +400,8 @@ class Parser:
                         self.poliz.append ( 0 ) #Добавляем любой элемент, потом он заменится на переход
             elif (el[0] == "}"): #выталкиваем всё в основной буфер до первой {
                 while (self.endEl(self.buffer)[0] != "{"):
-                    self.poliz.append(self.buffer.pop())
+                    value = self.buffer.pop()
+                    self.poliz.append( (value[0], value[1]))
                 self.buffer.pop()#убрали саму "{"
                 lastCall = self.calls.pop()
                 if (lastCall == "WHILE"):
@@ -397,7 +422,7 @@ class Parser:
                     if (el[1] == "SEMICOLON"):
                         #если встретился конец выражения, то переносим всё из буфера в основнйо стек
                         while (not self.endEl(self.buffer)[0] in
-                        ["=", "-=", "+=", "*=", "/=", "//=", "++", "--"]):
+                        ["=", "-=", "+=", "*=", "/=", "//=", "++", "--", "print"]):
                             val = self.buffer.pop()
                             self.poliz.append( (val[0], val[1]) )
                     val = self.buffer.pop() 
@@ -415,4 +440,4 @@ class Parser:
 def do_parse(tokens):
     p = Parser(tokens)
     if (p.parse()):
-        return p.poliz     
+        return p.poliz
