@@ -6,13 +6,13 @@ end = 20;
 while(i <= end){
     factorial *= i;
     i++;
-    print(factorial);
 }
-print(1);
+print("Answer: " . end . "! = " . factorial);
+print("======================");
 
 i = -10;
 while(i <= 32){
-    print(2 ** i);
+    print("2 ^ " . i . " = ". 2 ** i);
     i++;
 }
 

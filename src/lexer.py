@@ -15,7 +15,7 @@ def lex(characters, token_exprs):
             if match:
                 lexem = match.group(0)
                 if tag:
-                    token = (lexem, tag, priority)
+                    token = (lexem.replace('"',''), tag, priority)
                     tokens.append(token)
                 break
         if not match:

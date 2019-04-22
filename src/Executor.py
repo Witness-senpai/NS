@@ -31,14 +31,14 @@ class StackMachine:
             elif (self.stackEnd() != None):
                 #если на вершине стека какая-то операция над операндами, то выполняем
                 if (not self.stackEnd()[1] in 
-                ["INT", "FLOAT", "BOOL", "ID"]):
+                ["INT", "FLOAT", "BOOL", "ID", "STRING"]):
                     self.calculate()
             
     def printing(self, value):
         if (self.variables.get(value) != None):
-            print(">>> " + str(self.variables.get(value)))
+            print("> " + str(self.variables.get(value)))
         else:
-            print(">>> " + str(value))
+            print("> " + str(value))
 
     def checkDef(self, var):
         if (type(var) is tuple):
@@ -51,8 +51,10 @@ class StackMachine:
             return int(var[0])
         elif (var[1] == "FLOAT"):
             return float(var[0])
-        else:
+        elif (var[1] == "BOOL"):
             return bool(var[0])
+        else:
+            return str(var[0])
 
     def calculate(self):
         op = self.stack.pop()[0]
@@ -94,10 +96,13 @@ class StackMachine:
                 self.divAssign(a[0],   b)
             elif (op == "//="):
                 self.modAssign(a[0],   b)
-            
+        
+            #для дроугих операторов нужно только значение двух операндов, получаем значение второг ои выполняем
             a = self.variables.get(a[0]) if self.variables.get(a[0]) != None else self.getValue(a)
-
-            if (op == "+"):
+            
+            if (op == "."):
+                self.stack.append(self.concat(a, b))
+            elif (op == "+"):
                 self.stack.append(self.plus(a, b))
             elif (op == "-"):
                 self.stack.append(self.minus(a, b))
@@ -130,6 +135,9 @@ class StackMachine:
             elif (op == "not"):
                 self.stack.append(self.l_not(a))
 
+    def concat(self, val1, val2):
+        return str(val1) + str(val2), "STRING"
+
     def inc(self, var):
         self.variables[var] = self.variables.get(var) + 1
 
@@ -158,10 +166,11 @@ class StackMachine:
             return num1 * num2, "INT" 
 
     def pow(self, num1, num2):
-        if (type(num1) == float or type(num2) == float):
-            return num1 ** num2, "FLOAT"
+        res = num1 ** num2
+        if (type(res) == float):
+            return res, "FLOAT"
         else:
-            return num1 ** num2, "INT"  
+            return res, "INT"  
 
     def div(self, num1, num2):
         if num2 == 0:

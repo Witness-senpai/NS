@@ -226,8 +226,8 @@ class Parser:
         elif (not self.bkt_open(self.pos)):
             self.parseExeption("(", self.tokens[self.pos][0])
             return False
-        elif (not self.arif_stmt(self.pos)):
-            self.parseExeption("arithmetic expression", self.tokens[self.pos][0])
+        elif (not self.str_stmt(self.pos)):
+            self.parseExeption("string or arithmetic expression", self.tokens[self.pos][0])
             return False
         elif (not self.bkt_close(self.pos)):
             self.parseExeption(")", self.tokens[self.pos][0])
@@ -245,6 +245,41 @@ class Parser:
             return True
         else:
             return False
+
+    #str_stmt -> substr (concat substr)*
+    def str_stmt(self, pos):
+        if (not self.substr(self.pos)):
+            return False
+        while(True): #эквивалентно (concat substr)*
+            if (not self.concat(self.pos) and not self.substr(self.pos)):
+                break   
+        return True
+
+    #substr -> string | arif_stmt
+    def substr(self, pos):
+        if (
+            self.string(self.pos) or
+            self.arif_stmt(self.pos)
+        ):
+            return True
+        else:
+            return False
+
+    def string(self, pos):
+        if (self.tokens[self.pos][1] == "STRING"):
+            self.pushInStack(self.tokens[self.pos])
+            self.pos += 1
+            return True
+        else:
+            return False  
+
+    def concat(self, pos):
+        if (self.tokens[self.pos][1] == "CONCAT"):
+            self.pushInStack(self.tokens[self.pos])
+            self.pos += 1
+            return True
+        else:
+            return False  
 
     #while_stmt -> KW_WHILE bkt_open log_stmt bkt_close brace_open expr* brace_close        
     def while_stmt(self, pos):
@@ -376,7 +411,7 @@ class Parser:
         #print(self.poliz)
         #print(str(self.buffer) + "\n====")
         if (el[1] in 
-        ["INT", "FLOAT", "BOOL", "ID"]):
+        ["INT", "FLOAT", "BOOL", "ID", "STRING"]):
             self.poliz.append( (el[0], el[1]) )
         elif (el[1] in ["WHILE", "IF", "ELSE"]):
             self.calls.append(el[1])
@@ -422,7 +457,7 @@ class Parser:
                     if (el[1] == "SEMICOLON"):
                         #если встретился конец выражения, то переносим всё из буфера в основнйо стек
                         while (not self.endEl(self.buffer)[0] in
-                        ["=", "-=", "+=", "*=", "/=", "//=", "++", "--", "print"]):
+                        ["=", "-=", "+=", "*=", "/=", "//=", "++", "--", "print", "."]):
                             val = self.buffer.pop()
                             self.poliz.append( (val[0], val[1]) )
                     val = self.buffer.pop() 

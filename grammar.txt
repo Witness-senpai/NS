@@ -4,7 +4,9 @@ assign -> var ((assign_op arif_stmt) | inc_dec) semicolon
 arif_stmt -> value (arif_op value)*
 value -> var | number | bkt_expr
 bkt_expr -> bkt_open arif_stmt bkt_close
-printing -> KW_PRINT bkt_open arif_stmt bkt_close semicolon
+printing -> KW_PRINT bkt_open str_stmt bkt_close semicolon
+str_stmt -> substr (concat substr)*
+substr -> string | arif_stmt
 
 while_stmt -> KW_WHILE bkt_open log_stmt bkt_close
                 brace_open expr* brace_close
@@ -16,24 +18,28 @@ log_stmt -> log_value (log_op log_value)+
 log_value -> [log_not] ( var | number | log_bkt_expr )
 log_bkt_expr -> bkt_open log_stmt bkt_close
 
-KW_WHILE -> while
-KW_IF -> if
-KW_ELSE -> else
-KW_PRINT -> print
-KW_END -> end.
+KW_WHILE -> 'while'
+KW_IF -> 'if'
+KW_ELSE -> 'else'
+KW_PRINT -> 'print'
+KW_END -> 'end.'
 
 bkt_open    -> (
 bkt_close   -> )
 brace_open  -> {
 brace_close -> }
+
 inc_dec -> ++ | --
 assign_op -> = | -= | += | *= | /= | //=
-log_op  -> or | and | xor | < | <= | > | >= | != | ==
-log_not -> not
+log_op  -> 'or' | 'and' | 'xor' | < | <= | > | >= | != | ==
+log_not -> 'not'
 arif_op -> * | ** | + | - | / | //
+
+string -> "[^"]*"
 var -> [A-Za-z_][A-Za-z_0-9]*
 number -> int | float | bool
 int -> -?[0-9]+
 float -> -?[0-9]+.[0-9]+
 bool -> True | False
 semicolon -> ";"
+concat -> "."
