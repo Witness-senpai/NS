@@ -179,7 +179,7 @@ class StackMachine:
         return float(num1) / float(num2), "FLOAT"
     
     def mod(self, num1, num2):
-        if (type(num1) != float and type(num2) != float):
+        if (type(num1) == float or type(num2) == float):
             print("Error: modulus from float")
             exit()
         elif num2 == 0:
@@ -214,33 +214,17 @@ class StackMachine:
             self.variables[var] = self.variables.get(var) % num
     
     def l_greater(self, num1, num2):
-        if (type(num1) != bool and type(num2) != bool):
-            return num1 > num2, "BOOL"
-        else:
-            print("Error: using '>' for logical expression")
-            exit()
+        return num1 > num2, "BOOL"
     
     def l_greaterEq(self, num1, num2):
-        if (type(num1) != bool and type(num2) != bool):
-            return num1 >= num2, "BOOL"
-        else:
-            print("Error: using '>=' for logical expression")
-            exit()
-    
+        return num1 >= num2, "BOOL"
+
     def l_less(self, num1, num2):
-        if (type(num1) != bool and type(num2) != bool):
-            return num1 < num2, "BOOL"
-        else:
-            print("Error: using '<' for logical expression")
-            exit()
+        return num1 < num2, "BOOL"
 
     def l_lessEq(self, num1, num2):
-        if (type(num1) != bool and type(num2) != bool):
-            return num1 <= num2, "BOOL"
-        else:
-            print("Error: using '<=' for logical expression")
-            exit()
-    
+        return num1 <= num2, "BOOL"
+  
     def l_notEq(self, num1, num2):
         return num1 != num2, "BOOL"
     

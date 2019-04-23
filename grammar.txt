@@ -14,9 +14,8 @@ if_stmt -> KW_IF bkt_open log_stmt bkt_close
                 brace_open expr* brace_close [else_stmt]
 else_stmt -> KW_ELSE brace_open expr* brace_close
 
-log_stmt -> log_value (log_op log_value)+
-log_value -> [log_not] ( var | number | log_bkt_expr )
-log_bkt_expr -> bkt_open log_stmt bkt_close
+log_stmt -> comp_expr (log_op comp_expr)*
+comp_expr -> [log_not] (arif_stmt comp_op arif_stmt)
 
 KW_WHILE -> 'while'
 KW_IF -> 'if'
@@ -31,9 +30,10 @@ brace_close -> }
 
 inc_dec -> ++ | --
 assign_op -> = | -= | += | *= | /= | //=
-log_op  -> 'or' | 'and' | 'xor' | < | <= | > | >= | != | ==
-log_not -> 'not'
 arif_op -> * | ** | + | - | / | //
+comp_op -> < | <= | > | >= | != | ==
+log_op  -> 'or' | 'and' | 'xor'
+log_not -> 'not'
 
 string -> "[^"]*"
 var -> [A-Za-z_][A-Za-z_0-9]*

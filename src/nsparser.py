@@ -99,7 +99,7 @@ class Parser:
             return False
         return True 
        
-    #number -> int | float
+    #number -> int | float | bool 
     def number(self, pos):
         if (
             self.tokens[self.pos][1] == "INT"   or
@@ -124,39 +124,31 @@ class Parser:
             return False
         return True
 
-    #log_stmt -> log_value (log_op log_value)+
+    #log_stmt -> comp_expr (log_op comp_expr)*
     def log_stmt(self, pos):
-        if (not self.log_value(self.pos)):
-            return False
-        #эквивалентно (log_op log_value)+ -> 1 раз обязателен
-        if (not self.log_op(self.pos) and not self.log_value(self.pos)):
-            self.parseExeption("logical operation or logical value", self.tokens[self.pos][0])
+        if (not self.comp_expr(self.pos)):
             return False
         while(True): 
-            if (not self.log_op(self.pos) and not self.log_value(self.pos)):
-                break 
+            if (self.log_op(self.pos)):
+                if (not self.comp_expr(self.pos)):
+                    self.parseExeption("compare expression", self.tokens[self.pos][0])
+                    break
+            else:
+                break
         return True
 
-    #log_value -> [not_log] ( var | number | log_bkt_expr )
-    def log_value(self, pos):
-        self.log_not(self.pos)
-        if not(
-            self.var(self.pos)    or
-            self.number(self.pos) or
-            self.log_bkt_expr(self.pos)
-            ):
-            return False
-        return True
-
-    #log_bkt_expr -> bkt_open log_stmt bkt_close
-    def log_bkt_expr(self, pos):
-        if (not self.bkt_open(self.pos)):
-            return False
-        elif(not self.log_stmt(self.pos)):
-            self.parseExeption("logical expression", self.tokens[self.pos][0])
-            return False
-        elif(not self.bkt_close(self.pos)):
-            self.parseExeption(")", self.tokens[self.pos][0])
+    #comp_expr -> [log_not] (arif_stmt comp_op arif_stmt)
+    def comp_expr(self, pos):
+        if(self.log_not(self.pos)):
+            pass
+        if (self.arif_stmt(self.pos)):
+            if(not self.comp_op(self.pos)):
+                self.parseExeption("compare expression", self.tokens[self.pos][0])
+                return False
+            elif (not self.arif_stmt(self.pos)):
+                self.parseExeption("arithmetic expression", self.tokens[self.pos][0])
+                return False
+        else:
             return False
         return True    
 
@@ -373,9 +365,18 @@ class Parser:
 
     def log_op(self, pos):
         if (
-            self.tokens[self.pos][1] == "AND"        or
-            self.tokens[self.pos][1] == "OR"         or
-            self.tokens[self.pos][1] == "XOR"        or
+            self.tokens[self.pos][1] == "AND" or
+            self.tokens[self.pos][1] == "OR"  or
+            self.tokens[self.pos][1] == "XOR"       
+        ):
+            self.pushInStack(self.tokens[self.pos])
+            self.pos += 1
+            return True
+        else:
+            return False
+
+    def comp_op(self, pos):
+        if (
             self.tokens[self.pos][1] == "GRATER_EQ"  or
             self.tokens[self.pos][1] == "GRATER"     or
             self.tokens[self.pos][1] == "LESS_EQ"    or
@@ -391,6 +392,7 @@ class Parser:
 
     def log_not(self, pos):
         if (self.tokens[self.pos][1] == "NOT"):
+            self.pushInStack(self.tokens[self.pos])
             self.pos += 1
             return True
         else:

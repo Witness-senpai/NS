@@ -18,5 +18,3 @@ file1.close()
 file1 = open("./logs/poliz.txt", "w")
 file1.write(str(poliz))
 file1.close()
-
-
