@@ -13,7 +13,7 @@ class Parser:
     def parseExeption(self, expected, detected):
         print("\nParse error: detected " + "'" + detected +
              "', but " + "'" + expected + "' are expected!")
-        exit(1)     
+        exit(0)
 
     def endScript(self):
         return self.pos == len(self.tokens)
@@ -21,13 +21,11 @@ class Parser:
     def parse(self):
         return self.lang()
 
-    #lang -> expr* KW_END
+    #lang -> expr*
     def lang(self):
         while(not self.endScript()):
             if (not self.expr(self.pos)):
-                if (not self.tokens[self.pos][1] == "END"):
-                    return False
-                self.pos += 1
+                self.parseExeption("expression", self.tokens[self.pos][0])
         return True    
 
     #expr -> assign | while_stmt | if_stmt
@@ -36,7 +34,8 @@ class Parser:
             self.assign(self.pos) or
             self.while_stmt(self.pos) or
             self.if_stmt(self.pos) or
-            self.printing(self.pos)
+            self.printing(self.pos) or
+            self.inputting(self.pos)
             ):
             return False
         return True  
@@ -271,7 +270,34 @@ class Parser:
             self.pos += 1
             return True
         else:
-            return False  
+            return False
+
+    #inputting -> KW_INPUT bkt_open var bkt_close semicolon
+    def inputting(self, pos):
+        if (not self.KW_INPUT(self.pos)):
+            return False
+        elif (not self.bkt_open(self.pos)):
+            self.parseExeption("(", self.tokens[self.pos][0])
+            return False
+        elif (not self.var(self.pos)):
+            self.parseExeption("variable", self.tokens[self.pos][0])
+            return False
+        elif (not self.bkt_close(self.pos)):
+            self.parseExeption(")", self.tokens[self.pos][0])
+            return False
+        elif (not self.semicolon(self.pos)):
+            self.parseExeption(";", self.tokens[self.pos][0])
+            return False
+        else:
+            return True
+
+    def KW_INPUT(self, pos):
+        if (self.tokens[self.pos][1] == "INPUT"):
+            self.pushInStack(self.tokens[self.pos])
+            self.pos += 1
+            return True
+        else:
+            return False
 
     #while_stmt -> KW_WHILE bkt_open log_stmt bkt_close brace_open expr* brace_close        
     def while_stmt(self, pos):
@@ -459,7 +485,7 @@ class Parser:
                     if (el[1] == "SEMICOLON"):
                         #если встретился конец выражения, то переносим всё из буфера в основнйо стек
                         while (not self.endEl(self.buffer)[0] in
-                        ["=", "-=", "+=", "*=", "/=", "//=", "++", "--", "print", "."]):
+                        ["=", "-=", "+=", "*=", "/=", "//=", "++", "--", "print", ".", "input"]):
                             val = self.buffer.pop()
                             self.poliz.append( (val[0], val[1]) )
                     val = self.buffer.pop() 

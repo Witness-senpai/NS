@@ -3,7 +3,7 @@ from lexer import do_lex
 from nsparser import do_parse
 from Executor import do_calculate
 
-fileProgram = open("./tests/program.ns")
+fileProgram = open("./tests/fib.ns")
 characters = fileProgram.read()
 fileProgram.close()
 

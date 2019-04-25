@@ -33,11 +33,11 @@ token_exprs = [
     (r';',                      "SEMICOLON",         0),
     (r'\.',                     "CONCAT",            1),
 
-    (r'end\.',                  "END",               0),
     (r'if',                     "IF",                1),
     (r'else',                   "ELSE",              1),
     (r'while',                  "WHILE",             1),
     (r'print',                  "PRINT",             1),
+    (r'input',                  "INPUT",             1),
     (r'True',                   "BOOL",              0),
     (r'False',                  "BOOL",              0),
     (r'"[^"]*"',                "STRING",            0),
