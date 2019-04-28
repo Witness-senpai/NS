@@ -11,18 +11,18 @@ class LinkedList:
             self.__last = self.__first
         else:
             #Запоминаем редыдущий последний элемент
-            oldEndNode = self.__last
+            oldEndNode = self.getLast()
             #Добавялем новый последний элемент
-            self.__last = Node(value, self.__first, oldEndNode)
+            self.__last = Node(value, self.getFirst(), oldEndNode)
             #Предыдущий последний теперь будет ссылаться на новый послений элемент
-            oldEndNode.setNext(self.__last)
+            oldEndNode.setNext(self.getLast())
             #Самый первый элемент должен ссылаться на новый последний
-            self.__first.setPrev(self.__last)
+            self.getFirst().setPrev(self.getLast())
         self.__size += 1
     
     def delete(self, node):
-        node.prev.setNext(node.next)
-        node.next.setPrev(node.prev)
+        node.getPrev().setNext(node.getNext())
+        node.getNext().setPrev(node.getPrev())
         self.__size -= 1
 
     def getLast(self):
@@ -38,28 +38,31 @@ class LinkedList:
         head = self.getFirst()
         for i in range(0, self.getSize()):      
             print(str(head.value), end=" ")
-            head = head.next
-
+            head = head.getNext()
 
 class Node:
     def __init__(self, value=None, next=None, prev=None):
         self.value = value
-        self.next = next
-        self.prev = prev
+        self.__next = next
+        self.__prev = prev
     
     def delete(self):
-        self.next.setPrev(self.prev)
-        self.prev.setNext(self.next)
+        self.getNext().setPrev(self.getPrev())
+        self.getPrev().setNext(self.getNext())
         
-
-
     def getValue(self):
         return self.value
     
     def setNext(self, next):
-        self.next = next
+        self.__next = next
     
     def setPrev(self, prev):
-        self.prev = prev
+        self.__prev = prev
+
+    def getNext(self):
+        return self.__next
+    
+    def getPrev(self):
+        return self.__prev
     
 

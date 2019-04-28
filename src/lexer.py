@@ -21,7 +21,7 @@ def lex(characters, token_exprs):
         if not match:
             print("Wrong character '" + str(characters[pos]) + "'")
             return(tokens)
-            sys.exit(1)
+            sys.exit(0)
         else:
             pos = match.end(0)
     return tokens          
