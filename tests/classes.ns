@@ -22,6 +22,18 @@ while(i <= 20){
     i+=1;
 }
 
+print("!!!");
+
+head = ll->getLast;
+i = 0;
+end = ll->getSize;
+while(i < end){
+    temp = head->getValue;
+    print(i . " : " . temp);
+    i += 1;
+    head = head->getPrev;
+}
+
 firstPlusOne = ll->getFirst->getNext->getValue;
 last = ll->getLast->getValue;
 

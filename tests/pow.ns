@@ -7,6 +7,6 @@ print("Enter m:");
 input(m);
 
 while(n <= m){
-    print("2 ^ " . n . " = ". 2 ** n);
+    print("2 ^ " . n . " = " . 2 ** n);
     n+=1;
 }

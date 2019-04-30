@@ -9,37 +9,38 @@ class StackMachine:
         self.variables = {} #cловарь c переменными: varID -> varValue
         self.pos = 0  #номер текущего элемента полиза
 
-    def stackEnd(self):
-        if (len(self.stack) >= 1):
-            return self.stack[len(self.stack) - 1]
-        else:
-            return (None, None)
-
     #выполняет вычисление на стек машине, пока не дошли до конца ПОЛИЗа
     def process(self):
         while (self.pos < len(self.poliz)):
             self.stack.append(self.poliz[self.pos])
             self.pos += 1
+            stackHead = self.stack.pop()
+            if stackHead == "!!!":
+                print("1")
 
-            if (self.stackEnd()[1] == "!"):
-                self.pos = self.stack.pop()[0]
-            elif(self.stackEnd()[1] == "!F"):
-                adr = self.stack.pop()[0]
-                if (not self.stackEnd()[0]):
+            if (stackHead == "!"):
+                self.pos = self.stack.pop() #безусловный переход по адресу
+            elif(stackHead == "!F"):
+                adr = self.stack.pop()
+                if (not self.stack.pop()):
                     self.pos = adr
-                self.stack.pop() #выталкиваем оставшийся ненужный bool-результат
-            elif (self.stackEnd()[1] == "PRINT"):
-                self.stack.pop() #убираем из стека print
-                self.printing(self.stack.pop()[0])
-            elif (self.stackEnd()[1] == "INPUT"):
-                self.stack.pop() #убираем из стека read
-                self.inputting(self.stack.pop()[0])
-            elif (self.stackEnd() != None):
+            elif (stackHead == "print"):
+                self.printing(self.stack.pop())
+            elif (stackHead == "input"):
+                self.inputting(self.stack.pop())
+            elif (stackHead != None):
                 #если на вершине стека какая-то операция над операндами, то выполняем
-                if (not self.stackEnd()[1] in 
-                ["INT", "FLOAT", "BOOL", "ID", "STRING", "LL", "HS"]):
-                    self.calculate()
-            
+                if (stackHead in 
+                ["+=", "+", "//=", "//", "/=", "/", "**", "*=", "*", 
+                 "not","and", "or", "xor", ">=", ">", "<=", "<", "==", 
+                 "=", "!=", "add", "inSet", "getValue","getSize", 
+                 "getFirst", "getLast", "getNext", "getPrev", "."]):
+                    self.calculate(stackHead)
+                else:
+                    self.stack.append(stackHead)
+            else:
+               self.pushError("Error: unexpected " + stackHead)
+                    
     def printing(self, value):
         if (self.variables.get(value) != None):
             print("> " + str(self.variables.get(value)))
@@ -52,112 +53,86 @@ class StackMachine:
             self.variables[var] = self.convertType(v)
         else:
             print("Error: variable '" + var + "' is not defined")
-            exit()
+            exit(0)
 
     def convertType(self, value):
         try:
             if (value.find('"') != -1):
                 return str(value)
+            elif (value == "True"):
+                return True
+            elif (value == "False"):
+                return False
             elif (value.find('.') != -1):
                 return float(value)
             else:
                 return int(value)
         except:
             print("Error: unknown type of value '" + value + "'")
-            exit()
+            exit(0)
 
-    def checkDef(self, var):
-        if (type(var) is tuple):
-            if (self.variables.get(var[0]) == None and var[1] == "ID"):
-                print("Error: variable '" + var[0] + "' is not defined")
-                exit(0)
 
-    def getValue(self, var):
-        if var[1] == "INT":
-            return int(var[0])
-        elif (var[1] == "FLOAT"):
-            return float(var[0])
-        elif (var[1] == "BOOL"):
-            return bool(var[0])
-        elif (var[1] == "STRING"):
-            return str(var[0])
-        else:
-            return var[0]
-
-    def calculate(self):
-        op = self.stack.pop()[0]
-
+    def calculate(self, op):
         #для унарных операторов берём только 1 значение из стека
-        if (not op in ["not", "getFirst", "getLast", "getNext", "getPrev", "getValue", "getSize"]):
+        if (not op in ["not", "getFirst", "getLast",
+        "getNext", "getPrev", "getValue", "getSize"]):
             b = self.stack.pop()
             a = self.stack.pop()
         else:
             a = self.stack.pop()
-            b = (0, "INT") #костыль
+            
+            #Если операция с обхектом, что нужно узнать его адрес
+            #Он может быть напрямую в стеке или быть в переменной
+            obj_ref = self.variables.get(a) if self.variables.get(a) != None else a
 
-            #Методы далее работают с именнованой переменной объекта
-            #поэтому берём 0 атрибут у а, чтобы взять имя
             if op == "getFirst":
-                self.stack.append(self.getFirst(a[0]))
+                self.stack.append(self.getFirst(obj_ref))
             elif op == "getLast":
-                self.stack.append(self.getLast(a[0]))
+                self.stack.append(self.getLast(obj_ref))
             elif op == "getSize":
-                self.stack.append(self.getSize(a[0]))
-            #Методы далее работают со ссылкой на экземпляр объекта
-            #поэтому переменную а передаём как есть
+                self.stack.append(self.getSize(obj_ref))
             elif op == "getNext":
-                self.stack.append(self.getNext(a))
+                self.stack.append(self.getNext(obj_ref))
             elif op == "getPrev":
-                self.stack.append(self.getPrev(a))
+                self.stack.append(self.getPrev(obj_ref))
             elif op == "getValue":
-                self.stack.append(self.getVal(a))
+                self.stack.append(self.getValue(obj_ref))
             return
 
         #сначала проверяем, если это оператор присвоения,
         #то переменная будет перезаписана или проинициализирована
         if (op == "="):
-            #Это либо значение переменной либо непосредственно число
-            try:
-                b = b[0] if b[1] == "ID" else self.getValue(b)
-            except:
-                pass
-
             if b == "LinkedList":
-                self.initLL(a[0])
+                self.initLL(a)
             elif b == "HashSet":
-                self.initHS(a[0])
+                self.initHS(a)
             else:
-                self.assign(a[0], b)
+                #Берём имя переменной для инициализации 
+                b = self.variables.get(b) if type(b) == str else b
+                self.assign(a, b)
         #В противном случае, в других операциях будут использоваться уже сущ. переменные или числа
         else:
-            #проверяем, если использована необъявленная переменная
-            self.checkDef(a)
-            self.checkDef(b)
-
             #для операторов которые меняют значение переменной, нужно имя переменной для обращения и второе число
-            b = self.variables.get(b[0]) if self.variables.get(b[0]) != None else self.getValue(b)
+            b = self.variables.get(b) if self.variables.get(b) != None else b
 
             if op == "inSet":
-                self.stack.append(self.inSet(a[0], b))
+                self.stack.append(self.inSet(a, b))
             elif op == "add":
-                self.add(a[0], b)
-            elif (op == "++"):
-                self.inc(a[0])
-            elif (op == "--"):
-                self.dec(a[0])    
+                self.add(a, b)  
             elif (op == "-="):
-                self.minusAssign(a[0], b)
+                self.minusAssign(a, b)
             elif (op == "+="):
-                self.plusAssign(a[0],  b)
+                self.plusAssign(a, b)
             elif (op == "*="):
-                self.multAssign(a[0],  b)
+                self.multAssign(a, b)
             elif (op == "/="):
-                self.divAssign(a[0],   b)
+                self.divAssign(a, b)
             elif (op == "//="):
-                self.modAssign(a[0],   b)
+                self.modAssign(a, b)
             else:
-                #для других операторов нужно только значение двух операндов, получаем значение второго и выполняем
-                a = self.variables.get(a[0]) if self.variables.get(a[0]) != None else self.getValue(a)
+                #для других операторов нужно только значение двух операндов,
+                #получаем значение второго и выполняем
+                a = self.variables.get(a) if self.variables.get(a) != None else a
                 
                 if (op == "."):
                     self.stack.append(self.concat(a, b))
@@ -195,162 +170,142 @@ class StackMachine:
                     self.stack.append(self.l_not(a))
 
     def concat(self, val1, val2):
-        return str(val1) + str(val2), "STRING"
-
-    def inc(self, var):
-        self.variables[var] = self.variables.get(var) + 1
-
-    def dec(self, var):
-        self.variables[var] = self.variables.get(var) - 1
+        return str(val1) + str(val2)
 
     def assign(self, num1, num2):
-        self.variables[num1] = self.variables[num2] if self.variables.get(num2) != None else num2
+        try:
+            self.variables[num1] = self.variables[num2] if self.variables.get(num2) != None else num2
+        except:
+            self.pushError("Error: " + str(num1) + " are not defined")
 
     def plus(self, num1, num2):
-        if (type(num1) == float or type(num2) == float):
-            return num1 + num2, "FLOAT"
-        else:
-            return num1 + num2, "INT" 
+        try:
+            return num1 + num2
+        except:
+            self.pushError("Error: impossible operation: " + str(num1) + " + " + str(num2))
 
     def minus(self, num1, num2):
-        if (type(num1) == float or type(num2) == float):
-            return (num1 - num2, "FLOAT")
-        else:
-            return (num1 - num2, "INT") 
+        try:
+            return num1 - num2
+        except:
+            self.pushError("Error: impossible operation: " + str(num1) + " - " + str(num2))
 
     def mult(self, num1, num2):
-        if (type(num1) == float or type(num2) == float):
-            return num1 * num2, "FLOAT"
-        else:
-            return num1 * num2, "INT" 
+        try:
+            return num1 * num2
+        except:
+            self.pushError("Error: impossible operation: " + str(num1) + " * " + str(num2))
 
     def pow(self, num1, num2):
-        res = num1 ** num2
-        if (type(res) == float):
-            return res, "FLOAT"
-        else:
-            return res, "INT"  
+        try:
+            return num1 ** num2
+        except:
+            self.pushError("Error: impossible operation: " + str(num1) + " ** " + str(num2))
 
     def div(self, num1, num2):
         if num2 == 0:
-            print("Error: division by zero")
-            exit() 
-        return float(num1) / float(num2), "FLOAT"
+            self.pushError("Error: division by zero")
+        try:
+            return float(num1) / float(num2)
+        except:
+            self.pushError("Error: impossible operation: " + str(num1) + " / " + str(num2))
     
     def mod(self, num1, num2):
         if (type(num1) == float or type(num2) == float):
-            print("Error: modulus from float")
-            exit()
+            self.pushError("Error: modulus from float")
         elif num2 == 0:
-            print("Error: modulus by zero")
-            exit()
-        return num1 % num2, "INT"
+            self.pushError("Error: modulus by zero")
+        try:
+            return num1 % num2
+        except:
+            self.pushError("Error: impossible operation: " + str(num1) + " // " + str(num2))
 
     def minusAssign(self, var, num):
-        self.variables[var] = self.variables.get(var) - num
+        self.variables[var] = self.minus(self.variables.get(var), num)
     
     def plusAssign(self, var, num):
-        self.variables[var] = self.variables.get(var) + num
+        self.variables[var] = self.plus(self.variables.get(var), num)
     
     def multAssign(self, var, num):
-        self.variables[var] = self.variables.get(var) * num
+        self.variables[var] = self.mult(self.variables.get(var), num)
 
     def divAssign(self, var, num):
-        if num != 0:
-            self.variables[var] = self.variables.get(var) / float(num)
-        else:
-            print("Error: division by zero")
-            exit() 
+        self.variables[var] = self.div(self.variables.get(var), num)
 
     def modAssign(self, var, num):
-        if (type(self.variables.get(var)) != float and type(num) != float):
-            print("Error: modulus from float")
-            exit()
-        elif num == 0:
-            print("Error: modulus by zero")
-            exit()
-        else:
-            self.variables[var] = self.variables.get(var) % num
+        self.variables[var] = self.mod(self.variables.get(var), num)
     
     def l_greater(self, num1, num2):
         try:
-            return num1 > num2, "BOOL"
+            return num1 > num2,
         except:
             self.compareException(num1, num2)
     
     def l_greaterEq(self, num1, num2):
         try:
-            return num1 >= num2, "BOOL"
+            return num1 >= num2
         except:
             self.compareException(num1, num2)
 
     def l_less(self, num1, num2):
         try:
-            return num1 < num2, "BOOL"
+            return num1 < num2
         except:
             self.compareException(num1, num2)
 
     def l_lessEq(self, num1, num2):
         try:
-            return num1 <= num2, "BOOL"
+            return num1 <= num2
         except:
             self.compareException(num1, num2)
   
     def l_notEq(self, num1, num2):
         try:
-            return num1 != num2, "BOOL"
+            return num1 != num2
         except:
             self.compareException(num1, num2)
 
     def l_equal(self, num1, num2):
         try:
-            return num1 == num2, "BOOL"
+            return num1 == num2
         except:
             self.compareException(num1, num2)
 
     def l_not(self, num):
         if (type(num) == bool):
-            return not num, "BOOL"
+            return not num
         else:
             self.pushError("Error: using LOGICAL NOT for non-logical expression")
 
     def l_or(self, num1, num2):
         if (type(num1) == bool and type(num2) == bool):
-            return num1 or num2, "BOOL"
+            return num1 or num2
         else:
            self.pushError("Error: using LOGICAL OR for non-logical expression")
 
     def l_and(self, num1, num2):
         if (type(num1) == bool and type(num2) == bool):
-            return num1 and num2, "BOOL"
+            return num1 and num2
         else:
             self.pushError("Error: using LOGICAL AND for non-logical expression")
     
     def l_xor(self, num1, num2):
         if (type(num1) == bool and type(num2) == bool):
-            return ((not num1) and num2) or ((num1 and (not num2))), "BOOL"
+            return ((not num1) and num2) or ((num1 and (not num2)))
         else:
             self.pushError("Error: using LOGICAL XOR for non-logical expression")
-
-    def pushError(self, error):
-        print(error)
-        exit(0)
-
-    def compareException(self, n1, n2):
-        self.pushError("Error: impossible to compare '" +
-        str(n1) + "' and '" + str(n2) + "' values")
 
     def initLL(self, var):
         try:
             self.variables[var] = LinkedList()
         except:
-            self.pushError("Error: ") 
+            self.pushError("Error: impossible initialization Linked List") 
 
     def initHS(self, var):
         try:
             self.variables[var] = HashSet()
         except:
-            self.pushError("Error: ") 
+            self.pushError("Error: impossible initialization Hash Set") 
     
     def add(self, obj, val):
         try:
@@ -359,25 +314,25 @@ class StackMachine:
             self.pushError("Error: " + str(obj) + " has no add method") 
     def inSet(self, obj, val):
         try:
-            return self.variables[obj].inSet(val), "BOOL"
+            return self.variables[obj].inSet(val)
         except:
             self.pushError("Error: " + str(obj) + " has no inSet method") 
 
     def getSize(self, obj):
         try:
-            return self.variables[obj].getSize(), "INT"
+            return obj.getSize()
         except:
             self.pushError("Error: " + str(obj) + " has no getSize method") 
 
     def getFirst(self, obj):
         try:
-            return self.variables[obj].getFirst()
+            return obj.getFirst()
         except:
             self.pushError("Error: " + str(obj) + " has no getFirst method") 
 
     def getLast(self, obj):
         try:
-            return self.variables[obj].getLast()
+            return obj.getLast()
         except:
             self.pushError("Error: " + str(obj) + " has no getLast method")
 
@@ -393,18 +348,20 @@ class StackMachine:
         except:
             self.pushError("Error: " + str(obj) + " has no getPrev method") 
     
-    def getVal(self, obj):
+    def getValue(self, obj):
         try:
-            return obj.getValue(), "INT"
+            return obj.getValue()
         except:
             self.pushError("Error: " + str(obj) + " has no getValue method") 
+
+    def pushError(self, error):
+        print(error)
+        exit(0)
+
+    def compareException(self, n1, n2):
+        self.pushError("Error: impossible to compare '" +
+        str(n1) + "' and '" + str(n2) + "' values")
 
 def do_calculate(poliz):
     machine = StackMachine(poliz)
     machine.process()
-
-
-
-
-
-
