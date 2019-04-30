@@ -28,6 +28,12 @@ h.add(4)
 h.add(555)
 h.add(555)
 
+dict_ = {"heshet":h, "ll":a }
+print(dict_.get("ll").getFirst().getPrev().getValue())
+
+yy = dict_.get("heshet").inSet(1)
+print(str(yy))
+
 h.print()
 print(str(h.getSize()))
 print(h.inSet(1))

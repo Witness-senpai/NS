@@ -13,7 +13,7 @@ while (i <= n){
     } else {
         fib1 += fib0;
     }
-    i++;
+    i+=1;
 }
 
 if (fib0 > fib1){

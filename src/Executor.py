@@ -1,10 +1,13 @@
+from HashSet import HashSet
+from LinkedList import LinkedList
+
 #Стек-машина, которая выполняет сам код
 class StackMachine:
     def __init__(self, poliz):
         self.poliz = poliz #ПОльская ИНверсная запись, полученная после парсера
         self.stack = [] #основной стек для выполнения операций
         self.variables = {} #cловарь c переменными: varID -> varValue
-        self.pos = 0 #номер текущего элемента полиза
+        self.pos = 0  #номер текущего элемента полиза
 
     def stackEnd(self):
         if (len(self.stack) >= 1):
@@ -34,7 +37,7 @@ class StackMachine:
             elif (self.stackEnd() != None):
                 #если на вершине стека какая-то операция над операндами, то выполняем
                 if (not self.stackEnd()[1] in 
-                ["INT", "FLOAT", "BOOL", "ID", "STRING"]):
+                ["INT", "FLOAT", "BOOL", "ID", "STRING", "LL", "HS"]):
                     self.calculate()
             
     def printing(self, value):
@@ -67,7 +70,7 @@ class StackMachine:
         if (type(var) is tuple):
             if (self.variables.get(var[0]) == None and var[1] == "ID"):
                 print("Error: variable '" + var[0] + "' is not defined")
-                exit()
+                exit(0)
 
     def getValue(self, var):
         if var[1] == "INT":
@@ -76,27 +79,55 @@ class StackMachine:
             return float(var[0])
         elif (var[1] == "BOOL"):
             return bool(var[0])
-        else:
+        elif (var[1] == "STRING"):
             return str(var[0])
+        else:
+            return var[0]
 
     def calculate(self):
         op = self.stack.pop()[0]
 
         #для унарных операторов берём только 1 значение из стека
-        if (not op in ["++", "--", "not"]):
+        if (not op in ["not", "getFirst", "getLast", "getNext", "getPrev", "getValue", "getSize"]):
             b = self.stack.pop()
             a = self.stack.pop()
         else:
             a = self.stack.pop()
             b = (0, "INT") #костыль
 
+            #Методы далее работают с именнованой переменной объекта
+            #поэтому берём 0 атрибут у а, чтобы взять имя
+            if op == "getFirst":
+                self.stack.append(self.getFirst(a[0]))
+            elif op == "getLast":
+                self.stack.append(self.getLast(a[0]))
+            elif op == "getSize":
+                self.stack.append(self.getSize(a[0]))
+            #Методы далее работают со ссылкой на экземпляр объекта
+            #поэтому переменную а передаём как есть
+            elif op == "getNext":
+                self.stack.append(self.getNext(a))
+            elif op == "getPrev":
+                self.stack.append(self.getPrev(a))
+            elif op == "getValue":
+                self.stack.append(self.getVal(a))
+            return
+
         #сначала проверяем, если это оператор присвоения,
         #то переменная будет перезаписана или проинициализирована
         if (op == "="):
-            a = a[0]
             #Это либо значение переменной либо непосредственно число
-            b = b[0] if b[1] == "ID" else self.getValue(b)
-            self.assign(a, b)
+            try:
+                b = b[0] if b[1] == "ID" else self.getValue(b)
+            except:
+                pass
+
+            if b == "LinkedList":
+                self.initLL(a[0])
+            elif b == "HashSet":
+                self.initHS(a[0])
+            else:
+                self.assign(a[0], b)
         #В противном случае, в других операциях будут использоваться уже сущ. переменные или числа
         else:
             #проверяем, если использована необъявленная переменная
@@ -105,7 +136,12 @@ class StackMachine:
 
             #для операторов которые меняют значение переменной, нужно имя переменной для обращения и второе число
             b = self.variables.get(b[0]) if self.variables.get(b[0]) != None else self.getValue(b)
-            if (op == "++"):
+
+            if op == "inSet":
+                self.stack.append(self.inSet(a[0], b))
+            elif op == "add":
+                self.add(a[0], b)
+            elif (op == "++"):
                 self.inc(a[0])
             elif (op == "--"):
                 self.dec(a[0])    
@@ -120,7 +156,7 @@ class StackMachine:
             elif (op == "//="):
                 self.modAssign(a[0],   b)
             else:
-                #для других операторов нужно только значение двух операндов, получаем значение вторго и выполняем
+                #для других операторов нужно только значение двух операндов, получаем значение второго и выполняем
                 a = self.variables.get(a[0]) if self.variables.get(a[0]) != None else self.getValue(a)
                 
                 if (op == "."):
@@ -298,11 +334,70 @@ class StackMachine:
 
     def pushError(self, error):
         print(error)
-        exit()
+        exit(0)
 
     def compareException(self, n1, n2):
         self.pushError("Error: impossible to compare '" +
         str(n1) + "' and '" + str(n2) + "' values")
+
+    def initLL(self, var):
+        try:
+            self.variables[var] = LinkedList()
+        except:
+            self.pushError("Error: ") 
+
+    def initHS(self, var):
+        try:
+            self.variables[var] = HashSet()
+        except:
+            self.pushError("Error: ") 
+    
+    def add(self, obj, val):
+        try:
+            self.variables[obj].add(val)
+        except:
+            self.pushError("Error: " + str(obj) + " has no add method") 
+    def inSet(self, obj, val):
+        try:
+            return self.variables[obj].inSet(val), "BOOL"
+        except:
+            self.pushError("Error: " + str(obj) + " has no inSet method") 
+
+    def getSize(self, obj):
+        try:
+            return self.variables[obj].getSize(), "INT"
+        except:
+            self.pushError("Error: " + str(obj) + " has no getSize method") 
+
+    def getFirst(self, obj):
+        try:
+            return self.variables[obj].getFirst()
+        except:
+            self.pushError("Error: " + str(obj) + " has no getFirst method") 
+
+    def getLast(self, obj):
+        try:
+            return self.variables[obj].getLast()
+        except:
+            self.pushError("Error: " + str(obj) + " has no getLast method")
+
+    def getNext(self, obj):
+        try:
+            return obj.getNext()
+        except:
+            self.pushError("Error: " + str(obj) + " has no getNext method") 
+    
+    def getPrev(self, obj):
+        try:
+            return obj.getPrev()
+        except:
+            self.pushError("Error: " + str(obj) + " has no getPrev method") 
+    
+    def getVal(self, obj):
+        try:
+            return obj.getValue(), "INT"
+        except:
+            self.pushError("Error: " + str(obj) + " has no getValue method") 
 
 def do_calculate(poliz):
     machine = StackMachine(poliz)

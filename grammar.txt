@@ -1,14 +1,22 @@
 lang -> expr*
-expr -> assign | while_stmt | if_stmt | printing | inputting
-assign -> var ((assign_op arif_stmt) | inc_dec) semicolon
+expr -> assign | while_stmt | if_stmt | io
+assign -> var (assign_op (obj_create | obj_mulref | arif_stmt)) | obj_addVal semicolon
+obj_addVal -> obj_ref obj_add
+
+obj_create -> KW_LL | KW_HS
+obj_mulref -> var (obj_ref obj_simp_method)+
+obj_add  -> KW_ADD bkt_open arif_stmt bkt_close
+obj_inset -> KW_INSET bkt_open arif_stmt bkt_close
+obj_simp_method -> KW_GSIZE | KW_GNEXT | KW_GPREV | KW_GETVAL | KW_GFIRST | KW_GLAST | obj_inset 
+
 arif_stmt -> value (arif_op value)*
 value -> var | number | bkt_expr
 bkt_expr -> bkt_open arif_stmt bkt_close
 
+io -> printing | inputting
 printing -> KW_PRINT bkt_open str_stmt bkt_close semicolon
 str_stmt -> substr (concat substr)*
 substr -> string | arif_stmt
-
 inputting -> KW_INPUT bkt_open var bkt_close semicolon
 
 while_stmt -> KW_WHILE bkt_open log_stmt bkt_close
@@ -25,13 +33,22 @@ KW_IF -> 'if'
 KW_ELSE -> 'else'
 KW_PRINT -> 'print'
 KW_INPUT -> 'input'
+KW_LL -> 'LinkedList'
+KW_HS -> 'HashSet'
+KW_GETVAL -> 'getValue'
+KW_ADD -> 'add'
+KW_GNEXT -> 'getNext'
+KW_GPREV -> 'getPrev'
+KW_GSIZE -> 'getSize'
+KW_GFIRST -> 'getFirst'
+KW_GLAST -> 'getLast'
+KW_INSET -> 'inSet'
 
 bkt_open    -> (
 bkt_close   -> )
 brace_open  -> {
 brace_close -> }
 
-inc_dec -> ++ | --
 assign_op -> = | -= | += | *= | /= | //=
 arif_op -> * | ** | + | - | / | //
 comp_op -> < | <= | > | >= | != | ==
@@ -46,3 +63,4 @@ float -> -?[0-9]+.[0-9]+
 bool -> True | False
 semicolon -> ";"
 concat -> "."
+obj_ref -> "->"

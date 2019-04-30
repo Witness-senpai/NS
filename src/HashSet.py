@@ -3,7 +3,7 @@ from LinkedList import LinkedList
 class HashSet:
     def __init__(self):
         self.count = 16 #Определяет количество индексов для hash set
-        #инициализация списока из LinkedList в количестве count
+        #инициализация списка из LinkedList в количестве count
         self.list = [ LinkedList() for i in range(self.count) ]
         self.__size = 0
     
@@ -16,10 +16,10 @@ class HashSet:
             if element == head.getValue():
                 return 
             else:
-                #иначе дальше движемся по связному списку
+                #иначе дальше движемся до конца списка
                 head = head.getNext()
         #Если прошли по всему списку, то идентичных элементов нет и новый можно добавлять
-        self.list[indx].append(element)
+        self.list[indx].add(element)
         self.__size += 1 
     
     def getSize(self):

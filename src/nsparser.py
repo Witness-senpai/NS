@@ -28,33 +28,143 @@ class Parser:
                 self.parseExeption("expression", self.tokens[self.pos][0])
         return True    
 
-    #expr -> assign | while_stmt | if_stmt
+    #expr -> assign | while_stmt | if_stmt | io
     def expr(self, pos):
         if not(
             self.assign(self.pos) or
             self.while_stmt(self.pos) or
             self.if_stmt(self.pos) or
-            self.printing(self.pos) or
-            self.inputting(self.pos)
+            self.io(self.pos)
             ):
             return False
         return True  
 
-    #assign -> var ((assign_op arif_stmt) | inc_dec) semicolon
+    #io -> printing | inputting
+    def io(self, pos):
+        if (self.printing(self.pos) or
+            self.inputting(self.pos)):
+            return True
+        else:
+            return False
+
+    #assign -> var (assign_op (obj_create | obj_mulref | arif_stmt)) | obj_addVal semicolon
     def assign(self, pos):
         if (not self.var(self.pos)):
             return False
-        if (self.assign_op(self.pos)):
-            if (not self.arif_stmt(self.pos)):
-                self.parseExeption("arithmetic expression", self.tokens[self.pos][0])
+        elif(self.assign_op(self.pos)):
+            if not(self.obj_create(self.pos) or self.obj_mulref(self.pos) or self.arif_stmt(self.pos)):
+                self.parseExeption("arifmetical expression or object initialization", self.tokens[self.pos][0])
                 return False
-        elif (not self.inc_dec(self.pos)):
-            self.parseExeption("=, ++ or --", self.tokens[self.pos][0])
-            return False       
+        elif not self.obj_addVal(self.pos):
+            self.parseExeption("var or object initialization", self.tokens[self.pos][0])
+            return False
         if (not self.semicolon(self.pos)):
             self.parseExeption(";", self.tokens[self.pos][0])
             return False
         return True
+
+    #obj_addVal -> obj_ref obj_add
+    def obj_addVal(self, pos):
+        if not (
+            self.obj_ref(self.pos) and 
+            self.obj_add(self.pos)
+        ):
+            return False
+        else:
+            return True
+
+    #obj_create -> KW_LL | KW_HS
+    def obj_create(self, pos):
+        if (
+            self.tokens[self.pos][1] == "LL" or
+            self.tokens[self.pos][1] == "HS"
+        ):
+            self.pushInStack(self.tokens[self.pos])
+            self.pos += 1
+            return True
+        else:
+            return False 
+
+    #obj_mulref -> var (obj_ref obj_simp_method)+
+    def obj_mulref(self, pos):
+        if (not self.var(self.pos)):
+            return False
+        elif (self.obj_ref(self.pos) and self.obj_simp_method(self.pos)):
+            while(True):
+                if not ( 
+                self.obj_ref(self.pos) and
+                self.obj_simp_method(self.pos)
+                ):
+                    return True
+            return True
+        else:
+            #если условние всё же не выполнилось, нужно вытлкнуть переменную
+            #которую успели занести в полиз
+            self.poliz.pop()
+            self.pos -= 1
+            return False
+
+    #obj_add -> KW_ADD bkt_open arif_stmt bkt_close
+    def obj_add(self, pos):
+        if (not self.tokens[self.pos][1] == "ADD"):
+            return False
+        self.pushInStack(self.tokens[self.pos])
+        self.pos += 1
+        if(not self.bkt_open(self.pos)):
+            self.parseExeption("(", self.tokens[self.pos][0])
+            return False
+        elif(not self.arif_stmt(self.pos)):
+            self.parseExeption("arithmetic expression", self.tokens[self.pos][0])
+            return False
+        elif(not self.bkt_close(self.pos)):
+            self.parseExeption(")", self.tokens[self.pos][0])
+            return False
+        return True     
+
+    #obj_simp_method -> KW_GSIZE | KW_GNEXT | KW_GPREV | KW_GETVAL | KW_GFIRST | KW_GLAST | obj_inset 
+    def obj_simp_method(self, pos):
+        if (
+            self.tokens[self.pos][1] == "GSIZE"  or
+            self.tokens[self.pos][1] == "GNEXT"  or
+            self.tokens[self.pos][1] == "GPREV"  or
+            self.tokens[self.pos][1] == "GVALUE" or
+            self.tokens[self.pos][1] == "GFIRST" or
+            self.tokens[self.pos][1] == "GLAST"
+        ): 
+            self.pushInStack(self.tokens[self.pos])
+            self.pos += 1
+            return True
+        elif (self.obj_inset(self.pos)):
+            return True
+        else:
+            return False  
+    
+    #obj_inset -> KW_INSET bkt_open arif_stmt bkt_close
+    def obj_inset(self, pos):
+        if (not self.tokens[self.pos][1] == "INSET"):
+            return False
+        self.pushInStack(self.tokens[self.pos])
+        self.pos += 1
+        if(not self.bkt_open(self.pos)):
+            self.parseExeption("(", self.tokens[self.pos][0])
+            return False
+        elif(not self.arif_stmt(self.pos)):
+            self.parseExeption("arithmetic expression", self.tokens[self.pos][0])
+            return False
+        elif(not self.bkt_close(self.pos)):
+            self.parseExeption(")", self.tokens[self.pos][0])
+            return False
+        return True
+
+    def obj_ref(self, pos):
+        if self.tokens[self.pos][1] == "OBJ_REF":
+            #В стек не добавляем намерено, чтобы не было мусора
+            #данный символ нужен только для соответвия грамматике
+            #self.pushInStack(self.tokens[self.pos])
+            self.pos += 1
+            return True
+        else:
+            return False
 
     def var(self, pos):
         if self.tokens[self.pos][1] == "ID":
@@ -372,7 +482,8 @@ class Parser:
         ):
             self.pushInStack(self.tokens[self.pos])
             self.pos += 1
-        return True
+            return True
+        return False
 
     def arif_op(self, pos):
         if (
@@ -436,10 +547,11 @@ class Parser:
     #то добавляем его в общий стек. Иначе, добавляем токен в промежуточный стек(buffer)
     #buffer хранит операции, чтобы в правильном порядке формировать ПОЛИЗ в основном стеке
     def pushInStack(self, el):
-        #print(self.poliz)
-        #print(str(self.buffer) + "\n====")
+        print(self.poliz)
+        print(str(self.buffer) + "\n====")
         if (el[1] in 
-        ["INT", "FLOAT", "BOOL", "ID", "STRING"]):
+        ["INT", "FLOAT", "BOOL", "ID", "STRING", "LL", "HS",
+        "GSIZE", "GVALUE", "GFIRST", "GLAST", "GNEXT", "GPREV"]):
             self.poliz.append( (el[0], el[1]) )
         elif (el[1] in ["WHILE", "IF", "ELSE"]):
             self.calls.append(el[1])
@@ -485,7 +597,7 @@ class Parser:
                     if (el[1] == "SEMICOLON"):
                         #если встретился конец выражения, то переносим всё из буфера в основнйо стек
                         while (not self.endEl(self.buffer)[0] in
-                        ["=", "-=", "+=", "*=", "/=", "//=", "++", "--", "print", ".", "input"]):
+                        ["=", "-=", "+=", "*=", "/=", "//=", "print", ".", "input", "add"]):
                             val = self.buffer.pop()
                             self.poliz.append( (val[0], val[1]) )
                     val = self.buffer.pop() 

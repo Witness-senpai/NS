@@ -8,7 +8,7 @@ input(n);
 
 while(i <= n){
     factorial *= i;
-    i++;
+    i+=1;
 }
 
 print(n . "! = " . factorial);

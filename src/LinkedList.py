@@ -4,7 +4,7 @@ class LinkedList:
         self.__first = Node()
         self.__last  = Node()
 
-    def append(self, value):
+    def add(self, value):
         #Если введён самый первый элемент списка
         if (self.__first.value == None):
             self.__first = Node(value, value, value)

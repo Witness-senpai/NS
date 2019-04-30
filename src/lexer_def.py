@@ -1,9 +1,8 @@
 #token -> (regEx, tag, priority)
 token_exprs = [
-    (r'[ \t\n]+',               None,                0),
-    (r'!![^\n]*',               None,                0),     
+    (r'[ \t\n]+',               None,                0), #пробелы, табуляции, новые строки
+    (r'!![^\n]*',               None,                0), #комментарий
 
-    (r'\+\+',                   "INC",               8),
     (r'\+=',                    "PLUS_ASSIGN",       1),
     (r'\+',                     "PLUS",              6),       
     (r'//=',                    "MOD_ASSIGN",        1),
@@ -32,7 +31,17 @@ token_exprs = [
     (r'\}',                     "BRACE_CLOSE",       0),
     (r';',                      "SEMICOLON",         0),
     (r'\.',                     "CONCAT",            1),
-
+    
+    (r'add',                    "ADD",               1),
+    (r'inSet',                  "INSET",             1),
+    (r'LinkedList',             "LL",                1),
+    (r'HashSet',                "HS",                1),
+    (r'getValue',               "GVALUE",            1),
+    (r'getSize',                "GSIZE",             1),
+    (r'getFirst',               "GFIRST",            1),
+    (r'getLast',                "GLAST",             1),
+    (r'getNext',                "GNEXT",             1),
+    (r'getPrev',                "GPREV",             1),
     (r'if',                     "IF",                1),
     (r'else',                   "ELSE",              1),
     (r'while',                  "WHILE",             1),
@@ -41,7 +50,7 @@ token_exprs = [
     (r'True',                   "BOOL",              0),
     (r'False',                  "BOOL",              0),
     (r'"[^"]*"',                "STRING",            0),
-    (r'--',                     "DEC",               8),
+    (r'->',                     "OBJ_REF",           1),
     (r'-=',                     "MINUS_ASSIGN",      1), 
     (r'-?[0-9]+\.[0-9]+',       "FLOAT",             0),   
     (r'-?[0-9]+',               "INT",               0),

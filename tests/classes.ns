@@ -1,0 +1,29 @@
+h = HashSet;
+
+i = 0;
+while(i < 10){
+    h->add(i);
+    i+=1;
+}
+
+g1 = h->inSet(1);
+g2 = h->inSet(111);
+size = h->getSize;
+
+print("1 in set? : " . g1);
+print("111 in set? : " . g2);
+print("Set size: " . size);
+
+ll = LinkedList;
+
+i = 0;
+while(i <= 20){
+    ll->add(i);
+    i+=1;
+}
+
+firstPlusOne = ll->getFirst->getNext->getValue;
+last = ll->getLast->getValue;
+
+print("First el: " . firstPlusOne);
+print("Last el: " . last);

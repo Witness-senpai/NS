@@ -8,5 +8,5 @@ input(m);
 
 while(n <= m){
     print("2 ^ " . n . " = ". 2 ** n);
-    n++;
+    n+=1;
 }
