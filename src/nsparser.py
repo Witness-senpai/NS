@@ -550,7 +550,7 @@ class Parser:
         elif (value[1] == "FLOAT"):
             return float(value[0])
         elif (value[1] == "BOOL"):
-            if value[1] == "True":
+            if value[0] == "True":
                 return True
             else:
                 return False
@@ -600,7 +600,7 @@ class Parser:
                     self.poliz.append("!")
                     self.poliz[self.addrsForFilling.pop()] = len(self.poliz)
                 elif (lastCall == "IF"):
-                    self.poliz[self.addrsForFilling.pop()] = len(self.poliz) + 1
+                    self.poliz[self.addrsForFilling.pop()] = len(self.poliz)
                 elif (lastCall == "ELSE"):
                     self.poliz[self.addrsForFilling.pop()] = len(self.poliz)
                 else:

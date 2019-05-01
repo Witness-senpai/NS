@@ -15,8 +15,6 @@ class StackMachine:
             self.stack.append(self.poliz[self.pos])
             self.pos += 1
             stackHead = self.stack.pop()
-            if stackHead == "!!!":
-                print("1")
 
             if (stackHead == "!"):
                 self.pos = self.stack.pop() #безусловный переход по адресу
@@ -31,7 +29,7 @@ class StackMachine:
             elif (stackHead != None):
                 #если на вершине стека какая-то операция над операндами, то выполняем
                 if (stackHead in 
-                ["+=", "+", "//=", "//", "/=", "/", "**", "*=", "*", 
+                ["+=", "+", "//=", "//", "/=", "/", "**", "*=", "*", "-=", "-",
                  "not","and", "or", "xor", ">=", ">", "<=", "<", "==", 
                  "=", "!=", "add", "inSet", "getValue","getSize", 
                  "getFirst", "getLast", "getNext", "getPrev", "."]):
