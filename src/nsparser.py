@@ -561,8 +561,8 @@ class Parser:
     #то добавляем его в общий стек. Иначе, добавляем токен в промежуточный стек(buffer)
     #buffer хранит операции, чтобы в правильном порядке формировать ПОЛИЗ в основном стеке
     def pushInStack(self, el):
-        print(self.poliz)
-        print(str(self.buffer) + "\n====")
+        #print(self.poliz)
+        #print(str(self.buffer) + "\n====")
         if (el[1] in 
         ["INT", "FLOAT", "BOOL", "ID", "STRING", "LL", "HS",
         "GSIZE", "GVALUE", "GFIRST", "GLAST", "GNEXT", "GPREV"]):

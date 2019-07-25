@@ -10,12 +10,12 @@ fileProgram.close()
 tokens = do_lex(characters)
 poliz = do_parse(tokens)
 
-file1 = open("./logs/tokens.txt", "w")
-file1.write(str(tokens))
-file1.close()
+#file1 = open("./logs/tokens.txt", "w")
+#file1.write(str(tokens))
+#file1.close()
 
-file1 = open("./logs/poliz.txt", "w")
-file1.write(str(poliz))
-file1.close()
+#file1 = open("./logs/poliz.txt", "w")
+#file1.write(str(poliz))
+#file1.close()
 
 do_calculate(poliz)
